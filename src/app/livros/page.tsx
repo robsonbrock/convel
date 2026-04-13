@@ -1,15 +1,40 @@
 import { prisma } from "@/lib/prisma";
 import Link from "next/link";
-import { BookOpen, Plus } from "lucide-react";
+import { BookOpen, Plus, Pencil } from "lucide-react";
 import { formatDate } from "@/lib/utils";
+import SortableHeader from "@/components/ui/SortableHeader";
 
-export default async function LivrosPage() {
+type SortField = "title" | "author" | "type" | "quantity" | "createdAt";
+type SortOrder = "asc" | "desc";
+
+export default async function LivrosPage({
+  searchParams,
+}: {
+  searchParams: { sort?: string; order?: string };
+}) {
+  const sort = (searchParams.sort as SortField) || "title";
+  const order: SortOrder = searchParams.order === "desc" ? "desc" : "asc";
+
+  const validSorts: SortField[] = ["title", "author", "type", "quantity", "createdAt"];
+  const safeSort: SortField = validSorts.includes(sort) ? sort : "title";
+
   const books = await prisma.book.findMany({
-    orderBy: { title: "asc" },
+    orderBy: { [safeSort]: order },
     include: {
       _count: { select: { loans: { where: { returnedAt: null } } } },
     },
   });
+
+  const sh = (column: SortField, label: string, className?: string) => (
+    <SortableHeader
+      column={column}
+      label={label}
+      basePath="/livros"
+      currentSort={safeSort}
+      currentOrder={order}
+      className={className}
+    />
+  );
 
   return (
     <div className="space-y-4">
@@ -40,12 +65,13 @@ export default async function LivrosPage() {
           <table className="w-full text-sm">
             <thead>
               <tr className="border-b border-gray-100">
-                <th className="text-left px-5 py-3 text-gray-500 font-medium">Título</th>
-                <th className="text-left px-5 py-3 text-gray-500 font-medium hidden md:table-cell">Autor</th>
-                <th className="text-left px-5 py-3 text-gray-500 font-medium">Tipo</th>
-                <th className="text-left px-5 py-3 text-gray-500 font-medium hidden lg:table-cell">Qtd</th>
+                {sh("title", "Título")}
+                {sh("author", "Autor", "hidden md:table-cell")}
+                {sh("type", "Tipo")}
+                {sh("quantity", "Qtd", "hidden lg:table-cell")}
                 <th className="text-left px-5 py-3 text-gray-500 font-medium">Disponíveis</th>
-                <th className="text-left px-5 py-3 text-gray-500 font-medium hidden lg:table-cell">Cadastrado em</th>
+                {sh("createdAt", "Cadastrado em", "hidden lg:table-cell")}
+                <th className="text-left px-5 py-3 text-gray-500 font-medium">Ações</th>
               </tr>
             </thead>
             <tbody>
@@ -83,6 +109,15 @@ export default async function LivrosPage() {
                       </span>
                     </td>
                     <td className="px-5 py-3 text-gray-400 hidden lg:table-cell">{formatDate(book.createdAt)}</td>
+                    <td className="px-5 py-3">
+                      <Link
+                        href={`/livros/${book.id}/editar`}
+                        className="inline-flex items-center gap-1 text-xs text-blue-600 hover:text-blue-800 transition-colors"
+                      >
+                        <Pencil className="w-3 h-3" />
+                        Editar
+                      </Link>
+                    </td>
                   </tr>
                 );
               })}

@@ -57,7 +57,7 @@ export default function NovoEmprestimoForm({ books, borrowers, defaultBookId }: 
         setError(err.error ?? "Erro ao registrar empréstimo");
         return;
       }
-      router.push("/emprestimos");
+      window.location.href = "/emprestimos";
     } finally {
       setSaving(false);
     }

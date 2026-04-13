@@ -2,13 +2,46 @@ import { prisma } from "@/lib/prisma";
 import Link from "next/link";
 import { ArrowLeftRight, Plus, CheckCircle } from "lucide-react";
 import { formatDate, daysSince, formatCPF } from "@/lib/utils";
+import SortableHeader from "@/components/ui/SortableHeader";
+import { Prisma } from "@prisma/client";
 
-export default async function EmprestimosPage() {
+type SortOrder = "asc" | "desc";
+
+export default async function EmprestimosPage({
+  searchParams,
+}: {
+  searchParams: { sort?: string; order?: string };
+}) {
+  const sort = searchParams.sort || "loanedAt";
+  const order: SortOrder = searchParams.order === "asc" ? "asc" : "desc";
+
+  let orderBy: Prisma.LoanOrderByWithRelationInput;
+  if (sort === "bookTitle") {
+    orderBy = { book: { title: order } };
+  } else if (sort === "borrowerName") {
+    orderBy = { borrower: { name: order } };
+  } else if (sort === "borrowerCpf") {
+    orderBy = { borrower: { cpf: order } };
+  } else {
+    orderBy = { loanedAt: order };
+  }
+
   const loans = await prisma.loan.findMany({
     where: { returnedAt: null },
-    orderBy: { loanedAt: "desc" },
+    orderBy,
     include: { book: true, borrower: true },
   });
+
+  const sh = (column: string, label: string, className?: string) => (
+    <SortableHeader
+      column={column}
+      label={label}
+      basePath="/emprestimos"
+      currentSort={sort}
+      currentOrder={order}
+      className={className}
+    />
+  );
 
   return (
     <div className="space-y-4">
@@ -48,10 +81,10 @@ export default async function EmprestimosPage() {
           <table className="w-full text-sm">
             <thead>
               <tr className="border-b border-gray-100">
-                <th className="text-left px-5 py-3 text-gray-500 font-medium">Livro</th>
-                <th className="text-left px-5 py-3 text-gray-500 font-medium">Leitor</th>
-                <th className="text-left px-5 py-3 text-gray-500 font-medium hidden md:table-cell">CPF</th>
-                <th className="text-left px-5 py-3 text-gray-500 font-medium">Emprestado em</th>
+                {sh("bookTitle", "Livro")}
+                {sh("borrowerName", "Leitor")}
+                {sh("borrowerCpf", "CPF", "hidden md:table-cell")}
+                {sh("loanedAt", "Emprestado em")}
                 <th className="text-left px-5 py-3 text-gray-500 font-medium">Dias</th>
               </tr>
             </thead>

@@ -2,6 +2,7 @@ import { prisma } from "@/lib/prisma";
 import { BookOpen, ArrowLeftRight, ShoppingCart, BookMarked } from "lucide-react";
 import StatsCard from "@/components/dashboard/StatsCard";
 import SearchModal from "@/components/dashboard/SearchModal";
+import BorrowerSearchModal from "@/components/dashboard/BorrowerSearchModal";
 import { formatDate, daysSince } from "@/lib/utils";
 import Link from "next/link";
 
@@ -40,12 +41,15 @@ export default async function DashboardPage() {
   return (
     <div className="space-y-4">
       {/* Header row */}
-      <div className="flex items-center justify-between">
+      <div className="flex items-center justify-between gap-4 flex-wrap">
         <div>
           <h2 className="text-2xl font-bold text-gray-800">Visão Geral</h2>
           <p className="text-sm text-gray-500">Controle de Venda e Empréstimo de Livros</p>
         </div>
-        <SearchModal />
+        <div className="flex items-center gap-2 flex-wrap">
+          <SearchModal />
+          <BorrowerSearchModal />
+        </div>
       </div>
 
       {/* Stats */}
@@ -77,17 +81,31 @@ export default async function DashboardPage() {
       </div>
 
       {/* Green promo card */}
-      <div className="bg-gradient-to-r from-green-500 to-green-600 rounded-2xl p-5 text-white flex items-center justify-between">
+      <div className="bg-gradient-to-r from-green-500 to-green-600 rounded-2xl p-5 text-white flex items-center justify-between gap-3 flex-wrap">
         <div>
           <p className="text-sm font-medium opacity-80">Sistema ConVEL</p>
           <p className="text-lg font-bold mt-0.5">Controle de acervo simplificado</p>
         </div>
-        <Link
-          href="/livros/novo"
-          className="bg-white text-green-700 text-sm font-semibold px-4 py-2 rounded-xl hover:bg-green-50 transition-colors"
-        >
-          + Novo Livro
-        </Link>
+        <div className="flex items-center gap-2 flex-wrap">
+          <Link
+            href="/livros/novo"
+            className="bg-white text-green-700 text-sm font-semibold px-4 py-2 rounded-xl hover:bg-green-50 transition-colors"
+          >
+            + Novo Livro
+          </Link>
+          <Link
+            href="/emprestimos/novo"
+            className="bg-white/20 text-white text-sm font-semibold px-4 py-2 rounded-xl hover:bg-white/30 transition-colors border border-white/30"
+          >
+            + Novo Empréstimo
+          </Link>
+          <Link
+            href="/vendas/nova"
+            className="bg-white/20 text-white text-sm font-semibold px-4 py-2 rounded-xl hover:bg-white/30 transition-colors border border-white/30"
+          >
+            + Nova Venda
+          </Link>
+        </div>
       </div>
 
       {/* Two tables */}

@@ -2,12 +2,45 @@ import { prisma } from "@/lib/prisma";
 import Link from "next/link";
 import { ShoppingCart, Plus } from "lucide-react";
 import { formatDate } from "@/lib/utils";
+import SortableHeader from "@/components/ui/SortableHeader";
+import { Prisma } from "@prisma/client";
 
-export default async function VendasPage() {
+type SortOrder = "asc" | "desc";
+
+export default async function VendasPage({
+  searchParams,
+}: {
+  searchParams: { sort?: string; order?: string };
+}) {
+  const sort = searchParams.sort || "soldAt";
+  const order: SortOrder = searchParams.order === "asc" ? "asc" : "desc";
+
+  let orderBy: Prisma.SaleOrderByWithRelationInput;
+  if (sort === "bookTitle") {
+    orderBy = { book: { title: order } };
+  } else if (sort === "quantity") {
+    orderBy = { quantity: order };
+  } else if (sort === "notes") {
+    orderBy = { notes: order };
+  } else {
+    orderBy = { soldAt: order };
+  }
+
   const sales = await prisma.sale.findMany({
-    orderBy: { soldAt: "desc" },
+    orderBy,
     include: { book: true },
   });
+
+  const sh = (column: string, label: string, className?: string) => (
+    <SortableHeader
+      column={column}
+      label={label}
+      basePath="/vendas"
+      currentSort={sort}
+      currentOrder={order}
+      className={className}
+    />
+  );
 
   return (
     <div className="space-y-4">
@@ -35,10 +68,10 @@ export default async function VendasPage() {
           <table className="w-full text-sm">
             <thead>
               <tr className="border-b border-gray-100">
-                <th className="text-left px-5 py-3 text-gray-500 font-medium">Livro</th>
-                <th className="text-left px-5 py-3 text-gray-500 font-medium">Quantidade</th>
-                <th className="text-left px-5 py-3 text-gray-500 font-medium">Data</th>
-                <th className="text-left px-5 py-3 text-gray-500 font-medium hidden lg:table-cell">Observações</th>
+                {sh("bookTitle", "Livro")}
+                {sh("quantity", "Quantidade")}
+                {sh("soldAt", "Data")}
+                {sh("notes", "Observações", "hidden lg:table-cell")}
               </tr>
             </thead>
             <tbody>

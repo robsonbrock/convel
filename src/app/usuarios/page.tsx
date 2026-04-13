@@ -4,12 +4,26 @@ import { ShieldCheck, Plus, Crown } from "lucide-react";
 import { formatDate } from "@/lib/utils";
 import { MOCK_SESSION } from "@/lib/auth";
 import { redirect } from "next/navigation";
+import SortableHeader from "@/components/ui/SortableHeader";
 
-export default async function UsuariosPage() {
+type SortField = "fullName" | "email" | "isSuperAdmin" | "createdAt";
+type SortOrder = "asc" | "desc";
+
+export default async function UsuariosPage({
+  searchParams,
+}: {
+  searchParams: { sort?: string; order?: string };
+}) {
   if (!MOCK_SESSION.isSuperAdmin) redirect("/dashboard");
 
+  const sort = (searchParams.sort as SortField) || "fullName";
+  const order: SortOrder = searchParams.order === "desc" ? "desc" : "asc";
+
+  const validSorts: SortField[] = ["fullName", "email", "isSuperAdmin", "createdAt"];
+  const safeSort: SortField = validSorts.includes(sort) ? sort : "fullName";
+
   const users = await prisma.adminUser.findMany({
-    orderBy: { fullName: "asc" },
+    orderBy: { [safeSort]: order },
     select: {
       id: true,
       fullName: true,
@@ -19,6 +33,17 @@ export default async function UsuariosPage() {
       createdAt: true,
     },
   });
+
+  const sh = (column: SortField, label: string, className?: string) => (
+    <SortableHeader
+      column={column}
+      label={label}
+      basePath="/usuarios"
+      currentSort={safeSort}
+      currentOrder={order}
+      className={className}
+    />
+  );
 
   return (
     <div className="space-y-4">
@@ -46,10 +71,10 @@ export default async function UsuariosPage() {
           <table className="w-full text-sm">
             <thead>
               <tr className="border-b border-gray-100">
-                <th className="text-left px-5 py-3 text-gray-500 font-medium">Nome</th>
-                <th className="text-left px-5 py-3 text-gray-500 font-medium">E-mail</th>
-                <th className="text-left px-5 py-3 text-gray-500 font-medium hidden md:table-cell">Perfil</th>
-                <th className="text-left px-5 py-3 text-gray-500 font-medium hidden lg:table-cell">Cadastrado em</th>
+                {sh("fullName", "Nome")}
+                {sh("email", "E-mail")}
+                {sh("isSuperAdmin", "Perfil", "hidden md:table-cell")}
+                {sh("createdAt", "Cadastrado em", "hidden lg:table-cell")}
               </tr>
             </thead>
             <tbody>

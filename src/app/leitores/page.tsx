@@ -2,12 +2,37 @@ import { prisma } from "@/lib/prisma";
 import Link from "next/link";
 import { Users, Plus } from "lucide-react";
 import { formatCPF, formatDate } from "@/lib/utils";
+import SortableHeader from "@/components/ui/SortableHeader";
 
-export default async function LeitoresPage() {
+type SortField = "name" | "cpf" | "phone" | "createdAt";
+type SortOrder = "asc" | "desc";
+
+export default async function LeitoresPage({
+  searchParams,
+}: {
+  searchParams: { sort?: string; order?: string };
+}) {
+  const sort = (searchParams.sort as SortField) || "name";
+  const order: SortOrder = searchParams.order === "desc" ? "desc" : "asc";
+
+  const validSorts: SortField[] = ["name", "cpf", "phone", "createdAt"];
+  const safeSort: SortField = validSorts.includes(sort) ? sort : "name";
+
   const borrowers = await prisma.borrower.findMany({
-    orderBy: { name: "asc" },
+    orderBy: { [safeSort]: order },
     include: { _count: { select: { loans: { where: { returnedAt: null } } } } },
   });
+
+  const sh = (column: SortField, label: string, className?: string) => (
+    <SortableHeader
+      column={column}
+      label={label}
+      basePath="/leitores"
+      currentSort={safeSort}
+      currentOrder={order}
+      className={className}
+    />
+  );
 
   return (
     <div className="space-y-4">
@@ -38,11 +63,11 @@ export default async function LeitoresPage() {
           <table className="w-full text-sm">
             <thead>
               <tr className="border-b border-gray-100">
-                <th className="text-left px-5 py-3 text-gray-500 font-medium">Nome</th>
-                <th className="text-left px-5 py-3 text-gray-500 font-medium hidden md:table-cell">CPF</th>
-                <th className="text-left px-5 py-3 text-gray-500 font-medium hidden lg:table-cell">Telefone</th>
+                {sh("name", "Nome")}
+                {sh("cpf", "CPF", "hidden md:table-cell")}
+                {sh("phone", "Telefone", "hidden lg:table-cell")}
                 <th className="text-left px-5 py-3 text-gray-500 font-medium">Empréstimos ativos</th>
-                <th className="text-left px-5 py-3 text-gray-500 font-medium hidden lg:table-cell">Cadastrado em</th>
+                {sh("createdAt", "Cadastrado em", "hidden lg:table-cell")}
               </tr>
             </thead>
             <tbody>
