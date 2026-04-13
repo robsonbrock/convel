@@ -1,0 +1,69 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite"
+}
+
+model Book {
+  id        Int      @id @default(autoincrement())
+  title     String
+  author    String
+  publisher String
+  year      Int
+  isbn      String?  @unique
+  quantity  Int      @default(1)
+  type      String   // "VENDA" | "EMPRESTIMO"
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  loans Loan[]
+  sales Sale[]
+}
+
+model AdminUser {
+  id             Int      @id @default(autoincrement())
+  fullName       String
+  email          String   @unique
+  passwordHash   String
+  isSuperAdmin   Boolean  @default(false)
+  mustChangePass Boolean  @default(true)
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
+}
+
+model Borrower {
+  id        Int      @id @default(autoincrement())
+  name      String
+  cpf       String   @unique
+  address   String
+  phone     String
+  email     String?
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  loans Loan[]
+}
+
+model Loan {
+  id         Int       @id @default(autoincrement())
+  bookId     Int
+  borrowerId Int
+  loanedAt   DateTime  @default(now())
+  returnedAt DateTime?
+  notes      String?
+
+  book     Book     @relation(fields: [bookId], references: [id])
+  borrower Borrower @relation(fields: [borrowerId], references: [id])
+}
+
+model Sale {
+  id       Int      @id @default(autoincrement())
+  bookId   Int
+  quantity Int      @default(1)
+  soldAt   DateTime @default(now())
+  notes    String?
+
+  book Book @relation(fields: [bookId], references: [id])
+}
