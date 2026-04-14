@@ -27,7 +27,6 @@ interface Props {
 interface FormData {
   bookId: number;
   borrowerId: number;
-  operador: string;
   notes: string;
 }
 
@@ -117,16 +116,6 @@ export default function NovoEmprestimoForm({ books, borrowers, defaultBookId }: 
           <Link href="/leitores/novo" className="text-xs text-blue-600 hover:underline mt-1 inline-block">
             + Cadastrar novo leitor
           </Link>
-        </div>
-
-        {/* Operador */}
-        <div>
-          <label className="block text-sm font-medium text-gray-700 mb-1.5">Operador (opcional)</label>
-          <input
-            {...register("operador")}
-            className="w-full border border-gray-200 rounded-xl px-3.5 py-2.5 text-sm text-gray-800 focus:outline-none focus:ring-2 focus:ring-blue-300"
-            placeholder="Nome de quem está registrando"
-          />
         </div>
 
         {/* Notes */}

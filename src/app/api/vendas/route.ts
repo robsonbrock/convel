@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
+import { MOCK_SESSION } from "@/lib/auth";
 import { z } from "zod";
 
 const saleSchema = z.object({
@@ -7,7 +8,6 @@ const saleSchema = z.object({
   quantity: z.coerce.number().int().min(1),
   priceEach: z.coerce.number().min(0).optional().nullable(),
   notes: z.string().optional(),
-  operador: z.string().optional(),
 });
 
 export async function GET() {
@@ -21,7 +21,8 @@ export async function GET() {
 export async function POST(req: NextRequest) {
   try {
     const body = await req.json();
-    const { bookId, quantity, priceEach, notes, operador } = saleSchema.parse(body);
+    const { bookId, quantity, priceEach, notes } = saleSchema.parse(body);
+    const operador = MOCK_SESSION.fullName;
 
     const book = await prisma.book.findUnique({ where: { id: bookId } });
     if (!book) {
