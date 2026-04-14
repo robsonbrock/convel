@@ -12,7 +12,7 @@ export default async function NovoEmprestimoPage({
 
   const [books, borrowers] = await Promise.all([
     prisma.book.findMany({
-      where: { type: "EMPRESTIMO" },
+      where: { quantityEmprestimo: { gt: 0 } },
       include: { _count: { select: { loans: { where: { returnedAt: null } } } } },
       orderBy: { title: "asc" },
     }),
@@ -23,7 +23,7 @@ export default async function NovoEmprestimoPage({
     id: b.id,
     title: b.title,
     author: b.author,
-    availableCopies: b.quantity - b._count.loans,
+    availableCopies: b.quantityEmprestimo - b._count.loans,
   }));
 
   return (

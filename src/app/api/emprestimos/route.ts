@@ -28,18 +28,17 @@ export async function POST(req: NextRequest) {
     const body = await req.json();
     const { bookId, borrowerId, notes } = loanSchema.parse(body);
 
-    // Availability check
     const book = await prisma.book.findUnique({ where: { id: bookId } });
     if (!book) {
       return NextResponse.json({ error: "Livro não encontrado" }, { status: 404 });
     }
-    if (book.type !== "EMPRESTIMO") {
+    if (book.quantityEmprestimo <= 0) {
       return NextResponse.json({ error: "Este livro não está disponível para empréstimo" }, { status: 400 });
     }
     const activeLoanCount = await prisma.loan.count({
       where: { bookId, returnedAt: null },
     });
-    if (activeLoanCount >= book.quantity) {
+    if (activeLoanCount >= book.quantityEmprestimo) {
       return NextResponse.json({ error: "Não há exemplares disponíveis para empréstimo" }, { status: 409 });
     }
 

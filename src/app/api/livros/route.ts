@@ -8,17 +8,17 @@ const bookSchema = z.object({
   publisher: z.string().min(2),
   year: z.coerce.number().int().min(1800).max(new Date().getFullYear()),
   isbn: z.string().optional(),
-  quantity: z.coerce.number().int().min(1),
-  type: z.enum(["VENDA", "EMPRESTIMO"]),
+  quantityEmprestimo: z.coerce.number().int().min(0),
+  quantityVenda: z.coerce.number().int().min(0),
+}).refine((d) => d.quantityEmprestimo + d.quantityVenda > 0, {
+  message: "Informe pelo menos 1 exemplar (empréstimo ou venda)",
 });
 
 export async function GET() {
   const books = await prisma.book.findMany({
     orderBy: { createdAt: "desc" },
     include: {
-      _count: {
-        select: { loans: { where: { returnedAt: null } } },
-      },
+      _count: { select: { loans: { where: { returnedAt: null } } } },
     },
   });
 
@@ -26,7 +26,7 @@ export async function GET() {
     books.map((b) => ({
       ...b,
       activeLoanCount: b._count.loans,
-      availableCopies: b.type === "EMPRESTIMO" ? b.quantity - b._count.loans : b.quantity,
+      availableCopies: b.quantityEmprestimo - b._count.loans,
     }))
   );
 }
@@ -44,7 +44,7 @@ export async function POST(req: NextRequest) {
     return NextResponse.json(book, { status: 201 });
   } catch (err) {
     if (err instanceof z.ZodError) {
-      return NextResponse.json({ error: err.issues }, { status: 422 });
+      return NextResponse.json({ error: err.issues[0]?.message ?? "Dados inválidos" }, { status: 422 });
     }
     console.error(err);
     return NextResponse.json({ error: "Erro interno" }, { status: 500 });

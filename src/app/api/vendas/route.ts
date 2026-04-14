@@ -25,16 +25,16 @@ export async function POST(req: NextRequest) {
     if (!book) {
       return NextResponse.json({ error: "Livro não encontrado" }, { status: 404 });
     }
-    if (book.type !== "VENDA") {
+    if (book.quantityVenda <= 0) {
       return NextResponse.json({ error: "Este livro não está disponível para venda" }, { status: 400 });
     }
-    if (quantity > book.quantity) {
+    if (quantity > book.quantityVenda) {
       return NextResponse.json({ error: "Quantidade solicitada maior que o estoque disponível" }, { status: 409 });
     }
 
     const [sale] = await prisma.$transaction([
       prisma.sale.create({ data: { bookId, quantity, notes }, include: { book: true } }),
-      prisma.book.update({ where: { id: bookId }, data: { quantity: { decrement: quantity } } }),
+      prisma.book.update({ where: { id: bookId }, data: { quantityVenda: { decrement: quantity } } }),
     ]);
     return NextResponse.json(sale, { status: 201 });
   } catch (err) {

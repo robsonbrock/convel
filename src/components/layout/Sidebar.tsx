@@ -17,7 +17,8 @@ import { MOCK_SESSION } from "@/lib/auth";
 
 const navItems = [
   { href: "/dashboard", label: "Dashboard", icon: LayoutDashboard },
-  { href: "/livros", label: "Livros", icon: BookOpen },
+  { href: "/livros/emprestimo", label: "Livros p/ Empréstimo", icon: BookOpen },
+  { href: "/livros/venda", label: "Livros p/ Venda", icon: ShoppingCart },
   { href: "/leitores", label: "Leitores", icon: Users },
   { href: "/emprestimos", label: "Empréstimos", icon: ArrowLeftRight },
   { href: "/vendas", label: "Vendas", icon: ShoppingCart },
@@ -74,10 +75,10 @@ export default function Sidebar() {
         Meu Perfil
       </Link>
 
-      {/* Monthly plan card style */}
+      {/* Footer card */}
       <div className="bg-blue-50 rounded-xl p-3 mt-2">
         <p className="text-xs font-semibold text-blue-700 mb-1">Centro Espírita</p>
-        <p className="text-xs text-blue-500">Sistema de controle de livros</p>
+        <p className="text-xs text-blue-500">Controle de Vendas e Empréstimos de Livros</p>
       </div>
     </aside>
   );

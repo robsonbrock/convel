@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useCallback } from "react";
+import { useRouter } from "next/navigation";
 import { Search, X, Users, ArrowLeftRight } from "lucide-react";
 import { formatCPF, daysSince } from "@/lib/utils";
 
@@ -22,6 +23,7 @@ export default function BorrowerSearchModal() {
   const [query, setQuery] = useState("");
   const [results, setResults] = useState<BorrowerResult[]>([]);
   const [loading, setLoading] = useState(false);
+  const router = useRouter();
 
   const search = useCallback(async (q: string) => {
     if (q.length < 2) {
@@ -48,6 +50,11 @@ export default function BorrowerSearchModal() {
     setOpen(false);
     setQuery("");
     setResults([]);
+  };
+
+  const navigate = (href: string) => {
+    router.push(href);
+    handleClose();
   };
 
   return (
@@ -85,9 +92,7 @@ export default function BorrowerSearchModal() {
             </div>
 
             <div className="max-h-96 overflow-y-auto">
-              {loading && (
-                <p className="text-center py-8 text-sm text-gray-400">Buscando...</p>
-              )}
+              {loading && <p className="text-center py-8 text-sm text-gray-400">Buscando...</p>}
               {!loading && query.length >= 2 && results.length === 0 && (
                 <p className="text-center py-8 text-sm text-gray-400">
                   Nenhum leitor encontrado para &quot;{query}&quot;
@@ -108,15 +113,26 @@ export default function BorrowerSearchModal() {
                       <p className="text-sm font-medium text-gray-800">{b.name}</p>
                       <p className="text-xs text-gray-500">{formatCPF(b.cpf)}</p>
                     </div>
-                    <span
-                      className={`text-xs font-medium px-2 py-1 rounded-full ${
-                        b.loans.length > 0
-                          ? "bg-orange-50 text-orange-600"
-                          : "bg-gray-100 text-gray-500"
-                      }`}
-                    >
-                      {b.loans.length} empréstimo(s) ativo(s)
-                    </span>
+                    <div className="flex flex-col items-end gap-1 shrink-0">
+                      <span
+                        className={`text-xs font-medium px-2 py-1 rounded-full ${
+                          b.loans.length > 0
+                            ? "bg-orange-50 text-orange-600"
+                            : "bg-gray-100 text-gray-500"
+                        }`}
+                      >
+                        {b.loans.length} ativo(s)
+                      </span>
+                      {b.loans.length > 0 && (
+                        <button
+                          onClick={() => navigate(`/emprestimos?leitor=${encodeURIComponent(b.name)}`)}
+                          className="flex items-center gap-1 bg-blue-50 text-blue-600 text-xs px-2.5 py-1 rounded-lg hover:bg-blue-100 transition-colors border border-blue-200"
+                        >
+                          <ArrowLeftRight className="w-3 h-3" />
+                          Ver Empréstimos
+                        </button>
+                      )}
+                    </div>
                   </div>
                   {b.loans.length > 0 && (
                     <div className="mt-2 pl-11 space-y-1">

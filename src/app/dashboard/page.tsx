@@ -29,13 +29,13 @@ export default async function DashboardPage() {
       include: { book: true },
     }),
     prisma.book.findMany({
-      where: { type: "EMPRESTIMO" },
+      where: { quantityEmprestimo: { gt: 0 } },
       include: { _count: { select: { loans: { where: { returnedAt: null } } } } },
     }),
   ]);
 
   const availableForLoan = booksForLoan.filter(
-    (b) => b.quantity - b._count.loans > 0
+    (b) => b.quantityEmprestimo - b._count.loans > 0
   ).length;
 
   return (

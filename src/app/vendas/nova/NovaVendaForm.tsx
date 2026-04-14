@@ -9,7 +9,7 @@ interface Book {
   id: number;
   title: string;
   author: string;
-  quantity: number;
+  quantityVenda: number;
 }
 
 interface Props {
@@ -79,7 +79,7 @@ export default function NovaVendaForm({ books, defaultBookId }: Props) {
             <option value={0}>Selecione um livro...</option>
             {books.map((b) => (
               <option key={b.id} value={b.id}>
-                {b.title} — {b.author} ({b.quantity} em estoque)
+                {b.title} — {b.author} ({b.quantityVenda} em estoque)
               </option>
             ))}
           </select>

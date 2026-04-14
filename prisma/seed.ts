@@ -20,24 +20,18 @@ async function main() {
     },
   });
 
-  // Sample books
+  // Sample books — cada um pode ter exemplares para empréstimo, venda ou ambos
   const books = [
-    { title: "O Evangelho Segundo o Espiritismo", author: "Allan Kardec", publisher: "FEB", year: 1864, quantity: 5, type: "VENDA" },
-    { title: "O Livro dos Espíritos", author: "Allan Kardec", publisher: "FEB", year: 1857, quantity: 3, type: "EMPRESTIMO" },
-    { title: "A Gênese", author: "Allan Kardec", publisher: "FEB", year: 1868, quantity: 4, type: "VENDA" },
-    { title: "O Céu e o Inferno", author: "Allan Kardec", publisher: "FEB", year: 1865, quantity: 2, type: "EMPRESTIMO" },
-    { title: "Nosso Lar", author: "André Luiz / Francisco C. Xavier", publisher: "FEB", year: 1944, quantity: 6, type: "EMPRESTIMO" },
-    { title: "Chico Xavier", author: "Marcel Souto Maior", publisher: "Planeta", year: 2003, quantity: 2, type: "VENDA" },
+    { title: "O Evangelho Segundo o Espiritismo", author: "Allan Kardec", publisher: "FEB", year: 1864, quantityEmprestimo: 2, quantityVenda: 5 },
+    { title: "O Livro dos Espíritos", author: "Allan Kardec", publisher: "FEB", year: 1857, quantityEmprestimo: 3, quantityVenda: 0 },
+    { title: "A Gênese", author: "Allan Kardec", publisher: "FEB", year: 1868, quantityEmprestimo: 0, quantityVenda: 4 },
+    { title: "O Céu e o Inferno", author: "Allan Kardec", publisher: "FEB", year: 1865, quantityEmprestimo: 2, quantityVenda: 0 },
+    { title: "Nosso Lar", author: "André Luiz / Francisco C. Xavier", publisher: "FEB", year: 1944, quantityEmprestimo: 6, quantityVenda: 0 },
+    { title: "Chico Xavier", author: "Marcel Souto Maior", publisher: "Planeta", year: 2003, quantityEmprestimo: 0, quantityVenda: 2 },
   ];
 
   for (const book of books) {
-    await prisma.book.upsert({
-      where: { isbn: undefined as any },
-      update: {},
-      create: book,
-    }).catch(() => {
-      return prisma.book.create({ data: book }).catch(() => {});
-    });
+    await prisma.book.create({ data: book }).catch(() => {});
   }
 
   // Sample borrowers

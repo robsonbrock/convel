@@ -49,9 +49,10 @@ export async function GET(req: NextRequest) {
       id: b.id,
       title: b.title,
       author: b.author,
-      type: b.type,
-      quantity: b.quantity,
-      availableCopies: b.type === "EMPRESTIMO" ? b.quantity - b._count.loans : b.quantity,
+      quantityEmprestimo: b.quantityEmprestimo,
+      quantityVenda: b.quantityVenda,
+      availableCopies: b.quantityEmprestimo - b._count.loans,
+      activeLoansCount: b._count.loans,
     })),
   });
 }

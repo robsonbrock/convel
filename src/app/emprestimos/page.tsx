@@ -3,6 +3,7 @@ import Link from "next/link";
 import { ArrowLeftRight, Plus, CheckCircle } from "lucide-react";
 import { formatDate, daysSince, formatCPF } from "@/lib/utils";
 import SortableHeader from "@/components/ui/SortableHeader";
+import EmprestimosFilterBar from "@/components/emprestimos/EmprestimosFilterBar";
 import { Prisma } from "@prisma/client";
 
 type SortOrder = "asc" | "desc";
@@ -10,10 +11,12 @@ type SortOrder = "asc" | "desc";
 export default async function EmprestimosPage({
   searchParams,
 }: {
-  searchParams: { sort?: string; order?: string };
+  searchParams: { sort?: string; order?: string; leitor?: string; livro?: string };
 }) {
   const sort = searchParams.sort || "loanedAt";
   const order: SortOrder = searchParams.order === "asc" ? "asc" : "desc";
+  const leitor = searchParams.leitor?.trim() ?? "";
+  const livro = searchParams.livro?.trim() ?? "";
 
   let orderBy: Prisma.LoanOrderByWithRelationInput;
   if (sort === "bookTitle") {
@@ -27,7 +30,29 @@ export default async function EmprestimosPage({
   }
 
   const loans = await prisma.loan.findMany({
-    where: { returnedAt: null },
+    where: {
+      returnedAt: null,
+      ...(leitor
+        ? {
+            borrower: {
+              OR: [
+                { name: { contains: leitor } },
+                { cpf: { contains: leitor } },
+              ],
+            },
+          }
+        : {}),
+      ...(livro
+        ? {
+            book: {
+              OR: [
+                { title: { contains: livro } },
+                { author: { contains: livro } },
+              ],
+            },
+          }
+        : {}),
+    },
     orderBy,
     include: { book: true, borrower: true },
   });
@@ -68,14 +93,25 @@ export default async function EmprestimosPage({
         </div>
       </div>
 
+      <EmprestimosFilterBar
+        initialLeitor={leitor}
+        initialLivro={livro}
+        currentSort={sort}
+        currentOrder={order}
+      />
+
       <div className="bg-white rounded-2xl shadow-sm overflow-hidden">
         {loans.length === 0 ? (
           <div className="text-center py-12">
             <ArrowLeftRight className="w-10 h-10 text-gray-300 mx-auto mb-3" />
-            <p className="text-gray-400">Nenhum empréstimo ativo</p>
-            <Link href="/emprestimos/novo" className="text-sm text-blue-600 hover:underline mt-1 inline-block">
-              Registrar empréstimo
-            </Link>
+            <p className="text-gray-400">
+              {leitor || livro ? "Nenhum empréstimo encontrado para esse filtro" : "Nenhum empréstimo ativo"}
+            </p>
+            {!leitor && !livro && (
+              <Link href="/emprestimos/novo" className="text-sm text-blue-600 hover:underline mt-1 inline-block">
+                Registrar empréstimo
+              </Link>
+            )}
           </div>
         ) : (
           <table className="w-full text-sm">

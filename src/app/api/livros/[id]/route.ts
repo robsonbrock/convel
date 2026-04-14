@@ -15,12 +15,14 @@ export async function GET(
 
 const schema = z.object({
   title: z.string().min(2),
-  author: z.string().min(1),
-  publisher: z.string().min(1),
+  author: z.string().min(2),
+  publisher: z.string().min(2),
   year: z.coerce.number().int().min(1800).max(new Date().getFullYear()),
   isbn: z.string().optional().nullable(),
-  quantity: z.coerce.number().int().min(1),
-  type: z.enum(["VENDA", "EMPRESTIMO"]),
+  quantityEmprestimo: z.coerce.number().int().min(0),
+  quantityVenda: z.coerce.number().int().min(0),
+}).refine((d) => d.quantityEmprestimo + d.quantityVenda > 0, {
+  message: "Informe pelo menos 1 exemplar (empréstimo ou venda)",
 });
 
 export async function PATCH(

@@ -11,8 +11,9 @@ export default async function NovaVendaPage({
   const params = await searchParams;
 
   const books = await prisma.book.findMany({
-    where: { type: "VENDA", quantity: { gt: 0 } },
+    where: { quantityVenda: { gt: 0 } },
     orderBy: { title: "asc" },
+    select: { id: true, title: true, author: true, quantityVenda: true },
   });
 
   return (
