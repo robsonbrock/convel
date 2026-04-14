@@ -1,24 +1,24 @@
 import { prisma } from "@/lib/prisma";
 import Link from "next/link";
-import { BookOpen, Plus, Pencil } from "lucide-react";
+import { BookOpen, Plus, Pencil, ArrowLeftRight, ShoppingCart } from "lucide-react";
 import { formatDate } from "@/lib/utils";
 import SortableHeader from "@/components/ui/SortableHeader";
 
-type SortField = "title" | "author" | "quantityEmprestimo" | "createdAt";
+type SortField = "title" | "author" | "quantityEmprestimo" | "quantityVenda" | "createdAt";
 type SortOrder = "asc" | "desc";
 
-export default async function LivrosEmprestimoPage({
+export default async function LivrosPage({
   searchParams,
 }: {
   searchParams: { sort?: string; order?: string };
 }) {
   const sort = (searchParams.sort as SortField) || "title";
   const order: SortOrder = searchParams.order === "desc" ? "desc" : "asc";
-  const validSorts: SortField[] = ["title", "author", "quantityEmprestimo", "createdAt"];
+  const validSorts: SortField[] = ["title", "author", "quantityEmprestimo", "quantityVenda", "createdAt"];
   const safeSort: SortField = validSorts.includes(sort) ? sort : "title";
 
   const books = await prisma.book.findMany({
-    where: { quantityEmprestimo: { gt: 0 } },
+    where: { OR: [{ quantityEmprestimo: { gt: 0 } }, { quantityVenda: { gt: 0 } }] },
     orderBy: { [safeSort]: order },
     include: {
       _count: { select: { loans: { where: { returnedAt: null } } } },
@@ -40,12 +40,12 @@ export default async function LivrosEmprestimoPage({
     <div className="space-y-4">
       <div className="flex items-center justify-between">
         <div>
-          <h2 className="text-2xl font-bold text-gray-800">Livros p/ Empréstimo</h2>
-          <p className="text-sm text-gray-500">{books.length} título(s) disponível(is) para empréstimo</p>
+          <h2 className="text-2xl font-bold text-gray-800">Livros</h2>
+          <p className="text-sm text-gray-500">{books.length} título(s) cadastrado(s)</p>
         </div>
         <Link
           href="/livros/novo"
-          className="flex items-center gap-2 bg-blue-600 text-white px-4 py-2.5 rounded-xl text-sm font-medium hover:bg-blue-700 transition-colors"
+          className="flex items-center gap-2 bg-green-600 text-white px-4 py-2.5 rounded-xl text-sm font-medium hover:bg-green-700 transition-colors"
         >
           <Plus className="w-4 h-4" />
           Novo Livro
@@ -56,8 +56,8 @@ export default async function LivrosEmprestimoPage({
         {books.length === 0 ? (
           <div className="text-center py-12">
             <BookOpen className="w-10 h-10 text-gray-300 mx-auto mb-3" />
-            <p className="text-gray-400">Nenhum livro cadastrado para empréstimo</p>
-            <Link href="/livros/novo" className="text-sm text-blue-600 hover:underline mt-1 inline-block">
+            <p className="text-gray-400">Nenhum livro cadastrado</p>
+            <Link href="/livros/novo" className="text-sm text-green-600 hover:underline mt-1 inline-block">
               Cadastrar livro
             </Link>
           </div>
@@ -67,10 +67,13 @@ export default async function LivrosEmprestimoPage({
               <tr className="border-b border-gray-100">
                 {sh("title", "Título")}
                 {sh("author", "Autor", "hidden md:table-cell")}
-                {sh("quantityEmprestimo", "Qtd Total")}
-                <th className="text-left px-5 py-3 text-gray-500 font-medium">Disponíveis</th>
+                {sh("quantityEmprestimo", "Qtd Emp.")}
+                <th className="text-left px-5 py-3 text-gray-500 font-medium">Disp. Emp.</th>
+                {sh("quantityVenda", "Qtd Venda")}
                 {sh("createdAt", "Cadastrado em", "hidden lg:table-cell")}
-                <th className="text-left px-5 py-3 text-gray-500 font-medium">Ações</th>
+                <th className="px-3 py-3 text-center text-gray-500 font-medium text-xs">Emprestar</th>
+                <th className="px-3 py-3 text-center text-gray-500 font-medium text-xs">Vender</th>
+                <th className="px-3 py-3 text-center text-gray-500 font-medium text-xs">Editar</th>
               </tr>
             </thead>
             <tbody>
@@ -89,14 +92,45 @@ export default async function LivrosEmprestimoPage({
                         {available}
                       </span>
                     </td>
+                    <td className="px-5 py-3 text-gray-600">{book.quantityVenda}</td>
                     <td className="px-5 py-3 text-gray-400 hidden lg:table-cell">{formatDate(book.createdAt)}</td>
-                    <td className="px-5 py-3">
+                    <td className="px-3 py-3 text-center">
+                      {available > 0 ? (
+                        <Link
+                          href={`/emprestimos/novo?bookId=${book.id}`}
+                          title="Emprestar"
+                          className="inline-flex items-center justify-center w-7 h-7 rounded-lg text-blue-600 hover:bg-blue-50 transition-colors"
+                        >
+                          <ArrowLeftRight className="w-4 h-4" />
+                        </Link>
+                      ) : (
+                        <span className="inline-flex items-center justify-center w-7 h-7 text-gray-300" title="Sem exemplares disponíveis">
+                          <ArrowLeftRight className="w-4 h-4" />
+                        </span>
+                      )}
+                    </td>
+                    <td className="px-3 py-3 text-center">
+                      {book.quantityVenda > 0 ? (
+                        <Link
+                          href={`/vendas/nova?bookId=${book.id}`}
+                          title="Vender"
+                          className="inline-flex items-center justify-center w-7 h-7 rounded-lg text-green-600 hover:bg-green-50 transition-colors"
+                        >
+                          <ShoppingCart className="w-4 h-4" />
+                        </Link>
+                      ) : (
+                        <span className="inline-flex items-center justify-center w-7 h-7 text-gray-300" title="Sem estoque para venda">
+                          <ShoppingCart className="w-4 h-4" />
+                        </span>
+                      )}
+                    </td>
+                    <td className="px-3 py-3 text-center">
                       <Link
                         href={`/livros/${book.id}/editar`}
-                        className="inline-flex items-center gap-1 text-xs text-blue-600 hover:text-blue-800 transition-colors"
+                        title="Editar"
+                        className="inline-flex items-center justify-center w-7 h-7 rounded-lg text-gray-500 hover:bg-gray-100 transition-colors"
                       >
-                        <Pencil className="w-3 h-3" />
-                        Editar
+                        <Pencil className="w-4 h-4" />
                       </Link>
                     </td>
                   </tr>

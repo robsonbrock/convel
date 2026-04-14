@@ -17,8 +17,7 @@ import { MOCK_SESSION } from "@/lib/auth";
 
 const navItems = [
   { href: "/dashboard", label: "Dashboard", icon: LayoutDashboard },
-  { href: "/livros/emprestimo", label: "Livros p/ Empréstimo", icon: BookOpen },
-  { href: "/livros/venda", label: "Livros p/ Venda", icon: ShoppingCart },
+  { href: "/livros/emprestimo", label: "Livros", icon: BookOpen },
   { href: "/leitores", label: "Leitores", icon: Users },
   { href: "/emprestimos", label: "Empréstimos", icon: ArrowLeftRight },
   { href: "/vendas", label: "Vendas", icon: ShoppingCart },
