@@ -21,6 +21,7 @@ interface FormData {
   bookId: number;
   quantity: number;
   priceEach: string;
+  operador: string;
   notes: string;
 }
 
@@ -171,6 +172,15 @@ export default function NovaVendaForm({ books, defaultBookId }: Props) {
               {errors.priceEach && <p className="text-xs text-red-500 mt-1">{errors.priceEach.message}</p>}
             </div>
           </div>
+        </div>
+
+        <div>
+          <label className="block text-sm font-medium text-gray-700 mb-1.5">Operador (opcional)</label>
+          <input
+            {...register("operador")}
+            className={inputClass}
+            placeholder="Nome de quem está registrando"
+          />
         </div>
 
         <div>

@@ -6,6 +6,7 @@ const loanSchema = z.object({
   bookId: z.coerce.number().int(),
   borrowerId: z.coerce.number().int(),
   notes: z.string().optional(),
+  operador: z.string().optional(),
 });
 
 export async function GET(req: NextRequest) {
@@ -26,7 +27,7 @@ export async function GET(req: NextRequest) {
 export async function POST(req: NextRequest) {
   try {
     const body = await req.json();
-    const { bookId, borrowerId, notes } = loanSchema.parse(body);
+    const { bookId, borrowerId, notes, operador } = loanSchema.parse(body);
 
     const book = await prisma.book.findUnique({ where: { id: bookId } });
     if (!book) {
@@ -43,7 +44,7 @@ export async function POST(req: NextRequest) {
     }
 
     const loan = await prisma.loan.create({
-      data: { bookId, borrowerId, notes },
+      data: { bookId, borrowerId, notes, operador },
       include: { book: true, borrower: true },
     });
     return NextResponse.json(loan, { status: 201 });

@@ -1,9 +1,9 @@
 import { prisma } from "@/lib/prisma";
 import Link from "next/link";
 import { ArrowLeftRight, Plus, CheckCircle } from "lucide-react";
-import { formatDate, daysSince, formatCPF } from "@/lib/utils";
 import SortableHeader from "@/components/ui/SortableHeader";
 import EmprestimosFilterBar from "@/components/emprestimos/EmprestimosFilterBar";
+import EmprestimosTable from "@/components/emprestimos/EmprestimosTable";
 import { Prisma } from "@prisma/client";
 
 type SortOrder = "asc" | "desc";
@@ -57,17 +57,6 @@ export default async function EmprestimosPage({
     include: { book: true, borrower: true },
   });
 
-  const sh = (column: string, label: string, className?: string) => (
-    <SortableHeader
-      column={column}
-      label={label}
-      basePath="/emprestimos"
-      currentSort={sort}
-      currentOrder={order}
-      className={className}
-    />
-  );
-
   return (
     <div className="space-y-4">
       <div className="flex items-center justify-between">
@@ -114,44 +103,7 @@ export default async function EmprestimosPage({
             )}
           </div>
         ) : (
-          <table className="w-full text-sm">
-            <thead>
-              <tr className="border-b border-gray-100">
-                {sh("bookTitle", "Livro")}
-                {sh("borrowerName", "Leitor")}
-                {sh("borrowerCpf", "CPF", "hidden md:table-cell")}
-                {sh("loanedAt", "Emprestado em")}
-                <th className="text-left px-5 py-3 text-gray-500 font-medium">Dias</th>
-              </tr>
-            </thead>
-            <tbody>
-              {loans.map((loan) => {
-                const dias = daysSince(loan.loanedAt);
-                return (
-                  <tr key={loan.id} className="border-b border-gray-50 hover:bg-gray-50">
-                    <td className="px-5 py-3">
-                      <p className="font-medium text-gray-800">{loan.book.title}</p>
-                      <p className="text-xs text-gray-400">{loan.book.author}</p>
-                    </td>
-                    <td className="px-5 py-3 text-gray-700">{loan.borrower.name}</td>
-                    <td className="px-5 py-3 text-gray-500 hidden md:table-cell">{formatCPF(loan.borrower.cpf)}</td>
-                    <td className="px-5 py-3 text-gray-500">{formatDate(loan.loanedAt)}</td>
-                    <td className="px-5 py-3">
-                      <span
-                        className={`text-xs font-medium px-2 py-1 rounded-full ${
-                          dias > 30
-                            ? "bg-red-50 text-red-600"
-                            : "bg-gray-100 text-gray-600"
-                        }`}
-                      >
-                        {dias}d
-                      </span>
-                    </td>
-                  </tr>
-                );
-              })}
-            </tbody>
-          </table>
+          <EmprestimosTable initialLoans={loans} />
         )}
       </div>
     </div>

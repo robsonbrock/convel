@@ -54,6 +54,7 @@ model Loan {
   loanedAt   DateTime  @default(now())
   returnedAt DateTime?
   notes      String?
+  operador   String?
 
   book     Book     @relation(fields: [bookId], references: [id])
   borrower Borrower @relation(fields: [borrowerId], references: [id])
@@ -66,6 +67,7 @@ model Sale {
   priceEach    Float?   // preço efetivo por exemplar (pode ter desconto)
   soldAt       DateTime @default(now())
   notes        String?
+  operador     String?
 
   book Book @relation(fields: [bookId], references: [id])
 }

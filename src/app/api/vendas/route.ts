@@ -7,6 +7,7 @@ const saleSchema = z.object({
   quantity: z.coerce.number().int().min(1),
   priceEach: z.coerce.number().min(0).optional().nullable(),
   notes: z.string().optional(),
+  operador: z.string().optional(),
 });
 
 export async function GET() {
@@ -20,7 +21,7 @@ export async function GET() {
 export async function POST(req: NextRequest) {
   try {
     const body = await req.json();
-    const { bookId, quantity, priceEach, notes } = saleSchema.parse(body);
+    const { bookId, quantity, priceEach, notes, operador } = saleSchema.parse(body);
 
     const book = await prisma.book.findUnique({ where: { id: bookId } });
     if (!book) {
@@ -38,7 +39,7 @@ export async function POST(req: NextRequest) {
 
     const [sale] = await prisma.$transaction([
       prisma.sale.create({
-        data: { bookId, quantity, priceEach: priceEach ?? null, notes },
+        data: { bookId, quantity, priceEach: priceEach ?? null, notes, operador },
         include: { book: true },
       }),
       prisma.book.update({
