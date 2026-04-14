@@ -5,6 +5,7 @@ import { z } from "zod";
 const saleSchema = z.object({
   bookId: z.coerce.number().int(),
   quantity: z.coerce.number().int().min(1),
+  priceEach: z.coerce.number().min(0).optional().nullable(),
   notes: z.string().optional(),
 });
 
@@ -19,7 +20,7 @@ export async function GET() {
 export async function POST(req: NextRequest) {
   try {
     const body = await req.json();
-    const { bookId, quantity, notes } = saleSchema.parse(body);
+    const { bookId, quantity, priceEach, notes } = saleSchema.parse(body);
 
     const book = await prisma.book.findUnique({ where: { id: bookId } });
     if (!book) {
@@ -29,12 +30,21 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: "Este livro não está disponível para venda" }, { status: 400 });
     }
     if (quantity > book.quantityVenda) {
-      return NextResponse.json({ error: "Quantidade solicitada maior que o estoque disponível" }, { status: 409 });
+      return NextResponse.json(
+        { error: `Quantidade solicitada (${quantity}) maior que o estoque disponível (${book.quantityVenda})` },
+        { status: 409 }
+      );
     }
 
     const [sale] = await prisma.$transaction([
-      prisma.sale.create({ data: { bookId, quantity, notes }, include: { book: true } }),
-      prisma.book.update({ where: { id: bookId }, data: { quantityVenda: { decrement: quantity } } }),
+      prisma.sale.create({
+        data: { bookId, quantity, priceEach: priceEach ?? null, notes },
+        include: { book: true },
+      }),
+      prisma.book.update({
+        where: { id: bookId },
+        data: { quantityVenda: { decrement: quantity } },
+      }),
     ]);
     return NextResponse.json(sale, { status: 201 });
   } catch (err) {

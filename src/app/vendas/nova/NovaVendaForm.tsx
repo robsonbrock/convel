@@ -1,8 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { useRouter } from "next/navigation";
-import { useForm } from "react-hook-form";
+import { useForm, useWatch } from "react-hook-form";
 import Link from "next/link";
 
 interface Book {
@@ -10,6 +9,7 @@ interface Book {
   title: string;
   author: string;
   quantityVenda: number;
+  priceVenda: number | null;
 }
 
 interface Props {
@@ -20,21 +20,35 @@ interface Props {
 interface FormData {
   bookId: number;
   quantity: number;
+  priceEach: string;
   notes: string;
 }
 
 export default function NovaVendaForm({ books, defaultBookId }: Props) {
-  const router = useRouter();
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState("");
 
   const {
     register,
     handleSubmit,
+    control,
+    setValue,
     formState: { errors },
   } = useForm<FormData>({
-    defaultValues: { bookId: defaultBookId ?? 0, quantity: 1 },
+    defaultValues: { bookId: defaultBookId ?? 0, quantity: 1, priceEach: "", notes: "" },
   });
+
+  const bookIdValue = useWatch({ control, name: "bookId" });
+  const selectedBook = books.find((b) => b.id === Number(bookIdValue));
+
+  const handleBookChange = (id: number) => {
+    const book = books.find((b) => b.id === id);
+    if (book && book.priceVenda != null) {
+      setValue("priceEach", String(book.priceVenda));
+    } else {
+      setValue("priceEach", "");
+    }
+  };
 
   const onSubmit = async (data: FormData) => {
     setSaving(true);
@@ -43,14 +57,19 @@ export default function NovaVendaForm({ books, defaultBookId }: Props) {
       const res = await fetch("/api/vendas", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(data),
+        body: JSON.stringify({
+          bookId: data.bookId,
+          quantity: data.quantity,
+          priceEach: data.priceEach !== "" ? Number(data.priceEach) : null,
+          notes: data.notes,
+        }),
       });
       if (!res.ok) {
         const err = await res.json();
         setError(err.error ?? "Erro ao registrar venda");
         return;
       }
-      router.push("/vendas");
+      window.location.href = "/vendas";
     } finally {
       setSaving(false);
     }
@@ -58,6 +77,8 @@ export default function NovaVendaForm({ books, defaultBookId }: Props) {
 
   const selectClass =
     "w-full border border-gray-200 rounded-xl px-3.5 py-2.5 text-sm text-gray-800 focus:outline-none focus:ring-2 focus:ring-green-300 bg-white";
+  const inputClass =
+    "w-full border border-gray-200 rounded-xl px-3.5 py-2.5 text-sm text-gray-800 focus:outline-none focus:ring-2 focus:ring-green-300";
 
   return (
     <div className="bg-white rounded-2xl shadow-sm p-6">
@@ -73,18 +94,28 @@ export default function NovaVendaForm({ books, defaultBookId }: Props) {
             Livro <span className="text-red-500">*</span>
           </label>
           <select
-            {...register("bookId", { validate: (v) => Number(v) > 0 || "Selecione um livro" })}
+            {...register("bookId", {
+              validate: (v) => Number(v) > 0 || "Selecione um livro",
+              onChange: (e) => handleBookChange(Number(e.target.value)),
+            })}
             className={selectClass}
           >
             <option value={0}>Selecione um livro...</option>
             {books.map((b) => (
               <option key={b.id} value={b.id}>
-                {b.title} — {b.author} ({b.quantityVenda} em estoque)
+                {b.title} — {b.author}
               </option>
             ))}
           </select>
           {errors.bookId && <p className="text-xs text-red-500 mt-1">{errors.bookId.message}</p>}
         </div>
+
+        {selectedBook && (
+          <div className="bg-gray-50 border border-gray-100 rounded-xl px-4 py-3 text-sm text-gray-600">
+            <span className="font-medium">Em estoque para venda:</span>{" "}
+            <span className="font-bold text-gray-800">{selectedBook.quantityVenda} exemplar{selectedBook.quantityVenda !== 1 ? "es" : ""}</span>
+          </div>
+        )}
 
         <div>
           <label className="block text-sm font-medium text-gray-700 mb-1.5">
@@ -93,13 +124,53 @@ export default function NovaVendaForm({ books, defaultBookId }: Props) {
           <input
             type="number"
             min={1}
+            max={selectedBook?.quantityVenda ?? undefined}
             {...register("quantity", {
               required: "Informe a quantidade",
               min: { value: 1, message: "Mínimo 1" },
+              validate: (v) =>
+                !selectedBook || Number(v) <= selectedBook.quantityVenda ||
+                `Máximo disponível: ${selectedBook.quantityVenda}`,
             })}
-            className="w-full border border-gray-200 rounded-xl px-3.5 py-2.5 text-sm text-gray-800 focus:outline-none focus:ring-2 focus:ring-green-300"
+            className={inputClass}
           />
           {errors.quantity && <p className="text-xs text-red-500 mt-1">{errors.quantity.message}</p>}
+        </div>
+
+        <div className="border border-gray-100 rounded-xl p-4 space-y-4 bg-gray-50">
+          <p className="text-sm font-semibold text-gray-700">Preço</p>
+          <div className="grid grid-cols-2 gap-4">
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-1.5">
+                Preço de tabela (R$)
+              </label>
+              <input
+                type="text"
+                readOnly
+                value={
+                  selectedBook?.priceVenda != null
+                    ? Number(selectedBook.priceVenda).toLocaleString("pt-BR", { minimumFractionDigits: 2 })
+                    : "—"
+                }
+                className={`${inputClass} bg-gray-100 text-gray-500 cursor-default`}
+              />
+            </div>
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-1.5">
+                Preço de venda (R$)
+              </label>
+              <input
+                type="number"
+                min={0}
+                step="0.01"
+                placeholder="0,00"
+                {...register("priceEach", { min: { value: 0, message: "Valor inválido" } })}
+                className={inputClass}
+              />
+              <p className="text-xs text-gray-400 mt-1">Edite para registrar desconto.</p>
+              {errors.priceEach && <p className="text-xs text-red-500 mt-1">{errors.priceEach.message}</p>}
+            </div>
+          </div>
         </div>
 
         <div>

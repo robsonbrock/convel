@@ -13,8 +13,9 @@ model Book {
   publisher String
   year      Int
   isbn      String?  @unique
-  quantityEmprestimo Int @default(0)
-  quantityVenda      Int @default(0)
+  quantityEmprestimo Int    @default(0)
+  quantityVenda      Int    @default(0)
+  priceVenda         Float? // preço de tabela em R$
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
@@ -59,11 +60,12 @@ model Loan {
 }
 
 model Sale {
-  id       Int      @id @default(autoincrement())
-  bookId   Int
-  quantity Int      @default(1)
-  soldAt   DateTime @default(now())
-  notes    String?
+  id           Int      @id @default(autoincrement())
+  bookId       Int
+  quantity     Int      @default(1)
+  priceEach    Float?   // preço efetivo por exemplar (pode ter desconto)
+  soldAt       DateTime @default(now())
+  notes        String?
 
   book Book @relation(fields: [bookId], references: [id])
 }

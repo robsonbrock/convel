@@ -21,6 +21,7 @@ const schema = z.object({
   isbn: z.string().optional().nullable(),
   quantityEmprestimo: z.coerce.number().int().min(0),
   quantityVenda: z.coerce.number().int().min(0),
+  priceVenda: z.coerce.number().min(0).optional().nullable(),
 }).refine((d) => d.quantityEmprestimo + d.quantityVenda > 0, {
   message: "Informe pelo menos 1 exemplar (empréstimo ou venda)",
 });

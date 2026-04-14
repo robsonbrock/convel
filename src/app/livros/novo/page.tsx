@@ -13,6 +13,7 @@ interface BookFormData {
   isbn: string;
   quantityEmprestimo: number;
   quantityVenda: number;
+  priceVenda: string;
 }
 
 export default function NovoLivroPage() {
@@ -151,6 +152,21 @@ export default function NovoLivroPage() {
                 />
                 {errors.quantityVenda && <p className="text-xs text-red-500 mt-1">{errors.quantityVenda.message}</p>}
               </div>
+            </div>
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-1.5">
+                💰 Preço de venda (R$)
+              </label>
+              <input
+                type="number"
+                min={0}
+                step="0.01"
+                placeholder="0,00"
+                {...register("priceVenda", { min: { value: 0, message: "Valor inválido" } })}
+                className={inputClass}
+              />
+              <p className="text-xs text-gray-400 mt-1">Deixe em branco se ainda não houver preço definido.</p>
+              {errors.priceVenda && <p className="text-xs text-red-500 mt-1">{errors.priceVenda.message}</p>}
             </div>
           </div>
 
