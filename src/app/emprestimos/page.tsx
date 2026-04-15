@@ -5,6 +5,7 @@ import SortableHeader from "@/components/ui/SortableHeader";
 import EmprestimosFilterBar from "@/components/emprestimos/EmprestimosFilterBar";
 import EmprestimosTable from "@/components/emprestimos/EmprestimosTable";
 import { Prisma } from "@prisma/client";
+import { normalizeStr } from "@/lib/utils";
 
 type SortOrder = "asc" | "desc";
 
@@ -29,32 +30,19 @@ export default async function EmprestimosPage({
     orderBy = { loanedAt: order };
   }
 
-  const loans = await prisma.loan.findMany({
-    where: {
-      returnedAt: null,
-      ...(leitor
-        ? {
-            borrower: {
-              OR: [
-                { name: { contains: leitor } },
-                { cpf: { contains: leitor } },
-              ],
-            },
-          }
-        : {}),
-      ...(livro
-        ? {
-            book: {
-              OR: [
-                { title: { contains: livro } },
-                { author: { contains: livro } },
-              ],
-            },
-          }
-        : {}),
-    },
+  const allLoans = await prisma.loan.findMany({
+    where: { returnedAt: null },
     orderBy,
     include: { book: true, borrower: true },
+  });
+
+  const nLeitor = normalizeStr(leitor);
+  const nLivro = normalizeStr(livro);
+
+  const loans = allLoans.filter((l) => {
+    const leitorOk = !nLeitor || [l.borrower.name, l.borrower.cpf].some((f) => normalizeStr(f).includes(nLeitor));
+    const livroOk = !nLivro || [l.book.title, l.book.author].some((f) => normalizeStr(f).includes(nLivro));
+    return leitorOk && livroOk;
   });
 
   return (

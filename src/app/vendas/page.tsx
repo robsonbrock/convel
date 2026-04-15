@@ -3,6 +3,7 @@ import Link from "next/link";
 import { ShoppingCart, Plus } from "lucide-react";
 import VendasClient from "@/components/vendas/VendasClient";
 import { Prisma } from "@prisma/client";
+import { normalizeStr } from "@/lib/utils";
 
 type SortOrder = "asc" | "desc";
 
@@ -26,20 +27,12 @@ export default async function VendasPage({
     orderBy = { soldAt: order };
   }
 
-  const sales = await prisma.sale.findMany({
-    where: livro
-      ? {
-          book: {
-            OR: [
-              { title: { contains: livro } },
-              { author: { contains: livro } },
-            ],
-          },
-        }
-      : undefined,
-    orderBy,
-    include: { book: true },
-  });
+  const allSales = await prisma.sale.findMany({ orderBy, include: { book: true } });
+
+  const nLivro = normalizeStr(livro);
+  const sales = nLivro
+    ? allSales.filter((s) => [s.book.title, s.book.author].some((f) => normalizeStr(f).includes(nLivro)))
+    : allSales;
 
   return (
     <div className="space-y-4">

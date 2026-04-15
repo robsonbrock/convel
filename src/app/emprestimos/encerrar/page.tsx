@@ -3,7 +3,7 @@
 import { useState, useEffect } from "react";
 import { CheckCircle, ArrowLeft, Search } from "lucide-react";
 import Link from "next/link";
-import { formatDate, formatCPF, daysSince } from "@/lib/utils";
+import { formatDate, formatCPF, daysSince, normalizeStr } from "@/lib/utils";
 
 interface Loan {
   id: number;
@@ -36,8 +36,8 @@ export default function EncerrarEmprestimoPage() {
   }, []);
 
   const filtered = loans.filter((l) => {
-    const bk = l.book.title.toLowerCase().includes(bookFilter.toLowerCase());
-    const br = l.borrower.name.toLowerCase().includes(borrowerFilter.toLowerCase());
+    const bk = !bookFilter || normalizeStr(l.book.title).includes(normalizeStr(bookFilter));
+    const br = !borrowerFilter || normalizeStr(l.borrower.name).includes(normalizeStr(borrowerFilter));
     return bk && br;
   });
 

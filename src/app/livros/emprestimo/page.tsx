@@ -1,8 +1,9 @@
 import { prisma } from "@/lib/prisma";
 import Link from "next/link";
 import { BookOpen, Plus, Pencil, ArrowLeftRight, ShoppingCart } from "lucide-react";
-import { formatDate } from "@/lib/utils";
+import { formatDate, normalizeStr } from "@/lib/utils";
 import SortableHeader from "@/components/ui/SortableHeader";
+import LivrosFilterBar from "@/components/livros/LivrosFilterBar";
 
 type SortField = "title" | "author" | "quantityEmprestimo" | "quantityVenda" | "createdAt";
 type SortOrder = "asc" | "desc";
@@ -10,20 +11,24 @@ type SortOrder = "asc" | "desc";
 export default async function LivrosPage({
   searchParams,
 }: {
-  searchParams: { sort?: string; order?: string };
+  searchParams: { sort?: string; order?: string; livro?: string };
 }) {
   const sort = (searchParams.sort as SortField) || "title";
   const order: SortOrder = searchParams.order === "desc" ? "desc" : "asc";
+  const livro = searchParams.livro?.trim() ?? "";
   const validSorts: SortField[] = ["title", "author", "quantityEmprestimo", "quantityVenda", "createdAt"];
   const safeSort: SortField = validSorts.includes(sort) ? sort : "title";
 
-  const books = await prisma.book.findMany({
+  const allBooks = await prisma.book.findMany({
     where: { OR: [{ quantityEmprestimo: { gt: 0 } }, { quantityVenda: { gt: 0 } }] },
     orderBy: { [safeSort]: order },
-    include: {
-      _count: { select: { loans: { where: { returnedAt: null } } } },
-    },
+    include: { _count: { select: { loans: { where: { returnedAt: null } } } } },
   });
+
+  const nLivro = normalizeStr(livro);
+  const books = nLivro
+    ? allBooks.filter((b) => [b.title, b.author].some((f) => normalizeStr(f).includes(nLivro)))
+    : allBooks;
 
   const sh = (column: SortField, label: string, className?: string) => (
     <SortableHeader
@@ -50,6 +55,8 @@ export default async function LivrosPage({
           <Plus className="w-4 h-4" /> Novo Livro
         </Link>
       </div>
+
+      <LivrosFilterBar initialLivro={livro} currentSort={safeSort} currentOrder={order} />
 
       <div className="bg-white rounded-2xl shadow-sm overflow-hidden">
         {books.length === 0 ? (

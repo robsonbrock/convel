@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
+import { normalizeStr } from "@/lib/utils";
 
 export async function GET(req: NextRequest) {
   const { searchParams } = new URL(req.url);
@@ -8,21 +9,18 @@ export async function GET(req: NextRequest) {
 
   // Borrower search
   if (leitor.length >= 2) {
-    const borrowers = await prisma.borrower.findMany({
-      where: {
-        OR: [
-          { name: { contains: leitor } },
-          { cpf: { contains: leitor } },
-        ],
-      },
+    const nLeitor = normalizeStr(leitor);
+    const allBorrowers = await prisma.borrower.findMany({
       include: {
         loans: {
           where: { returnedAt: null },
           include: { book: true },
         },
       },
-      take: 10,
     });
+    const borrowers = allBorrowers.filter((b) =>
+      [b.name, b.cpf].some((f) => normalizeStr(f).includes(nLeitor))
+    ).slice(0, 10);
     return NextResponse.json({ borrowers });
   }
 
@@ -31,18 +29,16 @@ export async function GET(req: NextRequest) {
     return NextResponse.json({ books: [] });
   }
 
-  const books = await prisma.book.findMany({
-    where: {
-      OR: [
-        { title: { contains: q } },
-        { author: { contains: q } },
-      ],
-    },
+  const nQ = normalizeStr(q);
+  const allBooks = await prisma.book.findMany({
     include: {
       _count: { select: { loans: { where: { returnedAt: null } } } },
     },
-    take: 10,
   });
+
+  const books = allBooks
+    .filter((b) => [b.title, b.author].some((f) => normalizeStr(f).includes(nQ)))
+    .slice(0, 10);
 
   return NextResponse.json({
     books: books.map((b) => ({

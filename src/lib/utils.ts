@@ -34,3 +34,7 @@ export function daysSince(date: Date | string): number {
   const ms = Date.now() - new Date(date).getTime();
   return Math.floor(ms / (1000 * 60 * 60 * 24));
 }
+
+export function normalizeStr(s: string): string {
+  return s.normalize("NFD").replace(/\p{Mn}/gu, "").toLowerCase();
+}

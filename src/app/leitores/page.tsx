@@ -1,8 +1,9 @@
 import { prisma } from "@/lib/prisma";
 import Link from "next/link";
-import { Users, Plus } from "lucide-react";
-import { formatCPF, formatDate } from "@/lib/utils";
+import { Users, Plus, Pencil } from "lucide-react";
+import { formatCPF, formatDate, normalizeStr } from "@/lib/utils";
 import SortableHeader from "@/components/ui/SortableHeader";
+import LeitoresFilterBar from "@/components/leitores/LeitoresFilterBar";
 
 type SortField = "name" | "cpf" | "phone" | "createdAt";
 type SortOrder = "asc" | "desc";
@@ -10,18 +11,26 @@ type SortOrder = "asc" | "desc";
 export default async function LeitoresPage({
   searchParams,
 }: {
-  searchParams: { sort?: string; order?: string };
+  searchParams: { sort?: string; order?: string; leitor?: string };
 }) {
   const sort = (searchParams.sort as SortField) || "name";
   const order: SortOrder = searchParams.order === "desc" ? "desc" : "asc";
+  const leitor = searchParams.leitor?.trim() ?? "";
 
   const validSorts: SortField[] = ["name", "cpf", "phone", "createdAt"];
   const safeSort: SortField = validSorts.includes(sort) ? sort : "name";
 
-  const borrowers = await prisma.borrower.findMany({
+  const allBorrowers = await prisma.borrower.findMany({
     orderBy: { [safeSort]: order },
     include: { _count: { select: { loans: { where: { returnedAt: null } } } } },
   });
+
+  const nLeitor = normalizeStr(leitor);
+  const borrowers = nLeitor
+    ? allBorrowers.filter((b) =>
+        [b.name, b.cpf, b.email ?? ""].some((f) => normalizeStr(f).includes(nLeitor))
+      )
+    : allBorrowers;
 
   const sh = (column: SortField, label: string, className?: string) => (
     <SortableHeader
@@ -50,14 +59,20 @@ export default async function LeitoresPage({
         </Link>
       </div>
 
+      <LeitoresFilterBar initialLeitor={leitor} currentSort={safeSort} currentOrder={order} />
+
       <div className="bg-white rounded-2xl shadow-sm overflow-hidden">
         {borrowers.length === 0 ? (
           <div className="text-center py-12">
             <Users className="w-10 h-10 text-gray-300 mx-auto mb-3" />
-            <p className="text-gray-400">Nenhum leitor cadastrado ainda</p>
-            <Link href="/leitores/novo" className="text-sm text-blue-600 hover:underline mt-1 inline-block">
-              Cadastrar primeiro leitor
-            </Link>
+            <p className="text-gray-400">
+              {leitor ? "Nenhum leitor encontrado para esse filtro" : "Nenhum leitor cadastrado ainda"}
+            </p>
+            {!leitor && (
+              <Link href="/leitores/novo" className="text-sm text-blue-600 hover:underline mt-1 inline-block">
+                Cadastrar primeiro leitor
+              </Link>
+            )}
           </div>
         ) : (
           <table className="w-full text-sm">
@@ -68,6 +83,7 @@ export default async function LeitoresPage({
                 {sh("phone", "Telefone", "hidden lg:table-cell")}
                 <th className="text-left px-5 py-3 text-gray-500 font-medium">Empréstimos ativos</th>
                 {sh("createdAt", "Cadastrado em", "hidden lg:table-cell")}
+                <th className="px-5 py-3" />
               </tr>
             </thead>
             <tbody>
@@ -91,6 +107,15 @@ export default async function LeitoresPage({
                     </span>
                   </td>
                   <td className="px-5 py-3 text-gray-400 hidden lg:table-cell">{formatDate(b.createdAt)}</td>
+                  <td className="px-5 py-3">
+                    <Link
+                      href={`/leitores/${b.id}/editar`}
+                      className="flex items-center gap-1 text-xs px-2.5 py-1.5 rounded-lg border border-gray-200 text-gray-600 hover:bg-gray-50 transition-colors"
+                    >
+                      <Pencil className="w-3 h-3" />
+                      Editar
+                    </Link>
+                  </td>
                 </tr>
               ))}
             </tbody>
