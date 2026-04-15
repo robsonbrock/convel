@@ -47,8 +47,7 @@ export default async function LivrosPage({
           href="/livros/novo"
           className="flex items-center gap-2 bg-green-600 text-white px-4 py-2.5 rounded-xl text-sm font-medium hover:bg-green-700 transition-colors"
         >
-          <Plus className="w-4 h-4" />
-          Novo Livro
+          <Plus className="w-4 h-4" /> Novo Livro
         </Link>
       </div>
 
@@ -80,7 +79,7 @@ export default async function LivrosPage({
               {books.map((book) => {
                 const available = book.quantityEmprestimo - book._count.loans;
                 return (
-                  <tr key={book.id} className="border-b border-gray-50 hover:bg-gray-50">
+                  <tr key={book.id} className="border-b border-gray-70 hover:bg-blue-50">
                     <td className="px-5 py-3">
                       <p className="font-medium text-gray-800">{book.title}</p>
                       <p className="text-xs text-gray-400">{book.publisher} · {book.year}</p>

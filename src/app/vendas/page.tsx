@@ -1,8 +1,7 @@
 import { prisma } from "@/lib/prisma";
 import Link from "next/link";
 import { ShoppingCart, Plus } from "lucide-react";
-import SortableHeader from "@/components/ui/SortableHeader";
-import VendasTable from "@/components/vendas/VendasTable";
+import VendasClient from "@/components/vendas/VendasClient";
 import { Prisma } from "@prisma/client";
 
 type SortOrder = "asc" | "desc";
@@ -10,10 +9,11 @@ type SortOrder = "asc" | "desc";
 export default async function VendasPage({
   searchParams,
 }: {
-  searchParams: { sort?: string; order?: string };
+  searchParams: { sort?: string; order?: string; livro?: string };
 }) {
   const sort = searchParams.sort || "soldAt";
   const order: SortOrder = searchParams.order === "asc" ? "asc" : "desc";
+  const livro = searchParams.livro?.trim() ?? "";
 
   let orderBy: Prisma.SaleOrderByWithRelationInput;
   if (sort === "bookTitle") {
@@ -27,20 +27,19 @@ export default async function VendasPage({
   }
 
   const sales = await prisma.sale.findMany({
+    where: livro
+      ? {
+          book: {
+            OR: [
+              { title: { contains: livro } },
+              { author: { contains: livro } },
+            ],
+          },
+        }
+      : undefined,
     orderBy,
     include: { book: true },
   });
-
-  const sh = (column: string, label: string, className?: string) => (
-    <SortableHeader
-      column={column}
-      label={label}
-      basePath="/vendas"
-      currentSort={sort}
-      currentOrder={order}
-      className={className}
-    />
-  );
 
   return (
     <div className="space-y-4">
@@ -58,13 +57,18 @@ export default async function VendasPage({
         </Link>
       </div>
 
-      {sales.length === 0 ? (
+      {sales.length === 0 && !livro ? (
         <div className="bg-white rounded-2xl shadow-sm text-center py-12">
           <ShoppingCart className="w-10 h-10 text-gray-300 mx-auto mb-3" />
           <p className="text-gray-400">Nenhuma venda registrada ainda</p>
         </div>
       ) : (
-        <VendasTable sales={sales} />
+        <VendasClient
+          sales={sales}
+          initialLivro={livro}
+          currentSort={sort}
+          currentOrder={order}
+        />
       )}
     </div>
   );

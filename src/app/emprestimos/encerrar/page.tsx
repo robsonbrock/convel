@@ -128,7 +128,7 @@ export default function EncerrarEmprestimoPage() {
               {filtered.map((loan) => {
                 const dias = daysSince(loan.loanedAt);
                 return (
-                  <tr key={loan.id} className="border-b border-gray-50 hover:bg-gray-50">
+                  <tr key={loan.id} className="border-b border-gray-70 hover:bg-blue-50">
                     <td className="px-5 py-3">
                       <p className="font-medium text-gray-800">{loan.book.title}</p>
                       <p className="text-xs text-gray-400">{loan.book.author}</p>

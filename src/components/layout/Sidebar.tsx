@@ -76,7 +76,7 @@ export default function Sidebar() {
 
       {/* Footer card */}
       <div className="bg-blue-50 rounded-xl p-3 mt-2">
-        <p className="text-xs font-semibold text-blue-700 mb-1">Centro Espírita</p>
+        <p className="text-xs font-semibold text-blue-700 mb-1">ConVEL</p>
         <p className="text-xs text-blue-500">Controle de Vendas e Empréstimos de Livros</p>
       </div>
     </aside>

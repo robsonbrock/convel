@@ -79,7 +79,7 @@ export default async function UsuariosPage({
             </thead>
             <tbody>
               {users.map((u) => (
-                <tr key={u.id} className="border-b border-gray-50 hover:bg-gray-50">
+                <tr key={u.id} className="border-b border-gray-70 hover:bg-blue-50">
                   <td className="px-5 py-3">
                     <div className="flex items-center gap-2">
                       <div className="w-7 h-7 rounded-full bg-gradient-to-br from-green-400 to-green-600 flex items-center justify-center text-white text-xs font-bold">

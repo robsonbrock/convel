@@ -43,8 +43,8 @@ export default async function DashboardPage() {
       {/* Header row */}
       <div className="flex items-center justify-between gap-4 flex-wrap">
         <div>
-          <h2 className="text-2xl font-bold text-gray-800">Visão Geral</h2>
-          <p className="text-sm text-gray-500">Controle de Venda e Empréstimo de Livros</p>
+          <h2 className="text-2xl font-bold text-gray-800">Dashboard</h2>
+          <p className="text-sm text-gray-500">Visão geral sobre o sistema</p>
         </div>
         <div className="flex items-center gap-2 flex-wrap">
           <SearchModal />

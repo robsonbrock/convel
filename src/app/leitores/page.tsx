@@ -72,7 +72,7 @@ export default async function LeitoresPage({
             </thead>
             <tbody>
               {borrowers.map((b) => (
-                <tr key={b.id} className="border-b border-gray-50 hover:bg-gray-50">
+                <tr key={b.id} className="border-b border-gray-70 hover:bg-blue-50">
                   <td className="px-5 py-3">
                     <p className="font-medium text-gray-800">{b.name}</p>
                     {b.email && <p className="text-xs text-gray-400">{b.email}</p>}
