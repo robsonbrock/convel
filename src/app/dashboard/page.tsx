@@ -44,7 +44,7 @@ export default async function DashboardPage() {
       <div className="flex items-center justify-between gap-4 flex-wrap">
         <div>
           <h2 className="text-2xl font-bold text-gray-800">Dashboard</h2>
-          <p className="text-sm text-gray-500">Visão geral sobre o sistema</p>
+          <p className="text-sm text-gray-500">Visão geral sobre seu sistema</p>
         </div>
         <div className="flex items-center gap-2 flex-wrap">
           <SearchModal />
