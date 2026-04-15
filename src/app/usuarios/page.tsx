@@ -1,6 +1,6 @@
 import { prisma } from "@/lib/prisma";
 import Link from "next/link";
-import { ShieldCheck, Plus, Crown } from "lucide-react";
+import { ShieldCheck, Plus, Crown, Pencil } from "lucide-react";
 import { formatDate } from "@/lib/utils";
 import { MOCK_SESSION } from "@/lib/auth";
 import { redirect } from "next/navigation";
@@ -75,6 +75,7 @@ export default async function UsuariosPage({
                 {sh("email", "E-mail")}
                 {sh("isSuperAdmin", "Perfil", "hidden md:table-cell")}
                 {sh("createdAt", "Cadastrado em", "hidden lg:table-cell")}
+                <th className="px-3 py-3 text-center text-gray-500 font-medium text-xs">Editar</th>
               </tr>
             </thead>
             <tbody>
@@ -102,6 +103,15 @@ export default async function UsuariosPage({
                     )}
                   </td>
                   <td className="px-5 py-3 text-gray-400 hidden lg:table-cell">{formatDate(u.createdAt)}</td>
+                  <td className="px-3 py-3 text-center">
+                    <Link
+                      href={`/usuarios/${u.id}/editar`}
+                      title="Editar"
+                      className="inline-flex items-center justify-center w-7 h-7 rounded-lg text-gray-500 hover:bg-gray-100 transition-colors"
+                    >
+                      <Pencil className="w-4 h-4" />
+                    </Link>
+                  </td>
                 </tr>
               ))}
             </tbody>

@@ -15,6 +15,20 @@ interface BorrowerFormData {
   email: string;
 }
 
+function maskCPF(v: string) {
+  return v.replace(/\D/g, "").slice(0, 11)
+    .replace(/(\d{3})(\d)/, "$1.$2")
+    .replace(/(\d{3})(\d)/, "$1.$2")
+    .replace(/(\d{3})(\d{1,2})$/, "$1-$2");
+}
+
+function maskPhone(v: string) {
+  const d = v.replace(/\D/g, "").slice(0, 11);
+  if (d.length <= 10)
+    return d.replace(/(\d{2})(\d)/, "($1) $2").replace(/(\d{4})(\d{1,4})$/, "$1-$2");
+  return d.replace(/(\d{2})(\d)/, "($1) $2").replace(/(\d{5})(\d{1,4})$/, "$1-$2");
+}
+
 export default function NovoLeitorPage() {
   const router = useRouter();
   const [saving, setSaving] = useState(false);
@@ -23,6 +37,7 @@ export default function NovoLeitorPage() {
   const {
     register,
     handleSubmit,
+    setValue,
     formState: { errors },
   } = useForm<BorrowerFormData>();
 
@@ -87,6 +102,7 @@ export default function NovoLeitorPage() {
               className={inputClass}
               placeholder="000.000.000-00"
               maxLength={14}
+              onChange={(e) => setValue("cpf", maskCPF(e.target.value), { shouldValidate: false })}
             />
             {errors.cpf && <p className="text-xs text-red-500 mt-1">{errors.cpf.message}</p>}
           </div>
@@ -109,9 +125,14 @@ export default function NovoLeitorPage() {
                 Telefone <span className="text-red-500">*</span>
               </label>
               <input
-                {...register("phone", { required: "Telefone é obrigatório", minLength: { value: 8, message: "Telefone inválido" } })}
+                {...register("phone", {
+                  required: "Telefone é obrigatório",
+                  validate: (v) => v.replace(/\D/g, "").length >= 10 || "Telefone inválido",
+                })}
                 className={inputClass}
                 placeholder="(11) 99999-9999"
+                maxLength={15}
+                onChange={(e) => setValue("phone", maskPhone(e.target.value), { shouldValidate: false })}
               />
               {errors.phone && <p className="text-xs text-red-500 mt-1">{errors.phone.message}</p>}
             </div>
@@ -120,10 +141,14 @@ export default function NovoLeitorPage() {
               <label className="block text-sm font-medium text-gray-700 mb-1.5">E-mail (opcional)</label>
               <input
                 type="email"
-                {...register("email")}
+                {...register("email", {
+                  validate: (v) =>
+                    !v || /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(v) || "E-mail inválido",
+                })}
                 className={inputClass}
                 placeholder="leitor@email.com"
               />
+              {errors.email && <p className="text-xs text-red-500 mt-1">{errors.email.message}</p>}
             </div>
           </div>
 

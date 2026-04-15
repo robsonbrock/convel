@@ -83,7 +83,7 @@ export default async function LeitoresPage({
                 {sh("phone", "Telefone", "hidden lg:table-cell")}
                 <th className="text-left px-5 py-3 text-gray-500 font-medium">Empréstimos ativos</th>
                 {sh("createdAt", "Cadastrado em", "hidden lg:table-cell")}
-                <th className="px-5 py-3" />
+                <th className="px-3 py-3 text-center text-gray-500 font-medium text-xs">Editar</th>
               </tr>
             </thead>
             <tbody>
@@ -107,13 +107,13 @@ export default async function LeitoresPage({
                     </span>
                   </td>
                   <td className="px-5 py-3 text-gray-400 hidden lg:table-cell">{formatDate(b.createdAt)}</td>
-                  <td className="px-5 py-3">
+                  <td className="px-3 py-3 text-center">
                     <Link
                       href={`/leitores/${b.id}/editar`}
-                      className="flex items-center gap-1 text-xs px-2.5 py-1.5 rounded-lg border border-gray-200 text-gray-600 hover:bg-gray-50 transition-colors"
+                      title="Editar"
+                      className="inline-flex items-center justify-center w-7 h-7 rounded-lg text-gray-500 hover:bg-gray-100 transition-colors"
                     >
-                      <Pencil className="w-3 h-3" />
-                      Editar
+                      <Pencil className="w-4 h-4" />
                     </Link>
                   </td>
                 </tr>
