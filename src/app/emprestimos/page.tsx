@@ -91,7 +91,7 @@ export default async function EmprestimosPage({
             )}
           </div>
         ) : (
-          <EmprestimosTable initialLoans={loans} />
+          <EmprestimosTable initialLoans={loans} currentSort={sort} currentOrder={order} />
         )}
       </div>
     </div>

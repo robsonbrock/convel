@@ -31,8 +31,11 @@ export function formatDate(date: Date | string): string {
 }
 
 export function daysSince(date: Date | string): number {
-  const ms = Date.now() - new Date(date).getTime();
-  return Math.floor(ms / (1000 * 60 * 60 * 24));
+  const then = new Date(date);
+  const thenMidnight = Date.UTC(then.getFullYear(), then.getMonth(), then.getDate());
+  const now = new Date();
+  const nowMidnight = Date.UTC(now.getFullYear(), now.getMonth(), now.getDate());
+  return Math.floor((nowMidnight - thenMidnight) / (1000 * 60 * 60 * 24));
 }
 
 export function normalizeStr(s: string): string {

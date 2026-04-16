@@ -3,6 +3,7 @@
 import { useState } from "react";
 import { CheckCircle, RefreshCw } from "lucide-react";
 import { formatDate, daysSince, formatCPF } from "@/lib/utils";
+import SortableHeader from "@/components/ui/SortableHeader";
 
 interface Loan {
   id: number;
@@ -16,9 +17,11 @@ interface Loan {
 
 interface Props {
   initialLoans: Loan[];
+  currentSort: string;
+  currentOrder: "asc" | "desc";
 }
 
-export default function EmprestimosTable({ initialLoans }: Props) {
+export default function EmprestimosTable({ initialLoans, currentSort, currentOrder }: Props) {
   const [loans, setLoans] = useState<Loan[]>(initialLoans);
   const [closing, setClosing] = useState<number | null>(null);
   const [renewing, setRenewing] = useState<number | null>(null);
@@ -60,14 +63,25 @@ export default function EmprestimosTable({ initialLoans }: Props) {
     return null;
   }
 
+  const sh = (column: string, label: string, className?: string) => (
+    <SortableHeader
+      column={column}
+      label={label}
+      basePath="/emprestimos"
+      currentSort={currentSort}
+      currentOrder={currentOrder}
+      className={className}
+    />
+  );
+
   return (
     <table className="w-full text-sm">
       <thead>
         <tr className="border-b border-gray-100">
-          <th className="text-left px-5 py-3 text-gray-500 font-medium">Livro</th>
-          <th className="text-left px-5 py-3 text-gray-500 font-medium">Leitor</th>
-          <th className="text-left px-5 py-3 text-gray-500 font-medium hidden md:table-cell">CPF</th>
-          <th className="text-left px-5 py-3 text-gray-500 font-medium">Emprestado em</th>
+          {sh("bookTitle", "Livro")}
+          {sh("borrowerName", "Leitor")}
+          {sh("borrowerCpf", "CPF", "hidden md:table-cell")}
+          {sh("loanedAt", "Emprestado em")}
           <th className="text-left px-5 py-3 text-gray-500 font-medium">Dias</th>
           <th className="text-left px-5 py-3 text-gray-500 font-medium hidden lg:table-cell">Observações</th>
           <th className="text-left px-5 py-3 text-gray-500 font-medium hidden lg:table-cell">Operador</th>
