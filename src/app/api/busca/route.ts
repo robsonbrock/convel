@@ -18,7 +18,7 @@ export async function GET(req: NextRequest) {
         },
       },
     });
-    const borrowers = allBorrowers.filter((b) =>
+    const borrowers = allBorrowers.filter((b): boolean =>
       [b.name, b.cpf].some((f) => normalizeStr(f).includes(nLeitor))
     ).slice(0, 10);
     return NextResponse.json({ borrowers });
