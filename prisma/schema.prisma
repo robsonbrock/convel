@@ -61,13 +61,14 @@ model Loan {
 }
 
 model Sale {
-  id           Int      @id @default(autoincrement())
-  bookId       Int
-  quantity     Int      @default(1)
-  priceEach    Float?   // preço efetivo por exemplar (pode ter desconto)
-  soldAt       DateTime @default(now())
-  notes        String?
-  operador     String?
+  id             Int      @id @default(autoincrement())
+  bookId         Int
+  quantity       Int      @default(1)
+  priceEach      Float?
+  tipoPagamento  String?
+  soldAt         DateTime @default(now())
+  notes          String?
+  operador       String?
 
   book Book @relation(fields: [bookId], references: [id])
 }

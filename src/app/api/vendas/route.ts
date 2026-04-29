@@ -3,11 +3,14 @@ import { prisma } from "@/lib/prisma";
 import { MOCK_SESSION } from "@/lib/auth";
 import { z } from "zod";
 
+const TIPOS_PAGAMENTO = ["dinheiro", "pix", "credito", "debito", "outros"] as const;
+
 const saleSchema = z.object({
   bookId: z.coerce.number().int(),
   quantity: z.coerce.number().int().min(1),
   priceEach: z.coerce.number().min(0).optional().nullable(),
-  notes: z.string().optional(),
+  tipoPagamento: z.enum(TIPOS_PAGAMENTO).optional().nullable(),
+  notes: z.string().max(500).optional(),
 });
 
 export async function GET() {
@@ -21,7 +24,7 @@ export async function GET() {
 export async function POST(req: NextRequest) {
   try {
     const body = await req.json();
-    const { bookId, quantity, priceEach, notes } = saleSchema.parse(body);
+    const { bookId, quantity, priceEach, tipoPagamento, notes } = saleSchema.parse(body);
     const operador = MOCK_SESSION.fullName;
 
     const book = await prisma.book.findUnique({ where: { id: bookId } });
@@ -40,7 +43,7 @@ export async function POST(req: NextRequest) {
 
     const [sale] = await prisma.$transaction([
       prisma.sale.create({
-        data: { bookId, quantity, priceEach: priceEach ?? null, notes, operador },
+        data: { bookId, quantity, priceEach: priceEach ?? null, tipoPagamento: tipoPagamento ?? null, notes, operador },
         include: { book: true },
       }),
       prisma.book.update({

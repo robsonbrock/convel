@@ -21,33 +21,49 @@ interface FormData {
   bookId: number;
   quantity: number;
   priceEach: string;
+  tipoPagamento: string;
   notes: string;
 }
+
+const TIPOS_PAGAMENTO = [
+  { value: "dinheiro", label: "Dinheiro" },
+  { value: "pix", label: "Pix" },
+  { value: "credito", label: "Crédito" },
+  { value: "debito", label: "Débito" },
+  { value: "outros", label: "Outros" },
+];
 
 export default function NovaVendaForm({ books, defaultBookId }: Props) {
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState("");
+  const [priceDisplay, setPriceDisplay] = useState("");
 
   const {
     register,
     handleSubmit,
     control,
     setValue,
+    watch,
     formState: { errors },
   } = useForm<FormData>({
-    defaultValues: { bookId: defaultBookId ?? 0, quantity: 1, priceEach: "", notes: "" },
+    defaultValues: { bookId: defaultBookId ?? 0, quantity: 1, priceEach: "", tipoPagamento: "", notes: "" },
   });
 
   const bookIdValue = useWatch({ control, name: "bookId" });
+  const notesValue = watch("notes");
   const selectedBook = books.find((b) => b.id === Number(bookIdValue));
+
+  const formatPrice = (raw: string) => {
+    const n = parseFloat(raw);
+    if (isNaN(n)) return "";
+    return n.toLocaleString("pt-BR", { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+  };
 
   const handleBookChange = (id: number) => {
     const book = books.find((b) => b.id === id);
-    if (book && book.priceVenda != null) {
-      setValue("priceEach", String(book.priceVenda));
-    } else {
-      setValue("priceEach", "");
-    }
+    const raw = book?.priceVenda != null ? String(book.priceVenda) : "";
+    setValue("priceEach", raw);
+    setPriceDisplay(formatPrice(raw));
   };
 
   const onSubmit = async (data: FormData) => {
@@ -61,6 +77,7 @@ export default function NovaVendaForm({ books, defaultBookId }: Props) {
           bookId: data.bookId,
           quantity: data.quantity,
           priceEach: data.priceEach !== "" ? Number(data.priceEach) : null,
+          tipoPagamento: data.tipoPagamento || null,
           notes: data.notes,
         }),
       });
@@ -89,6 +106,7 @@ export default function NovaVendaForm({ books, defaultBookId }: Props) {
       )}
 
       <form onSubmit={handleSubmit(onSubmit)} className="space-y-5">
+        {/* Livro */}
         <div>
           <label className="block text-sm font-medium text-gray-700 mb-1.5">
             Livro <span className="text-red-500">*</span>
@@ -110,33 +128,64 @@ export default function NovaVendaForm({ books, defaultBookId }: Props) {
           {errors.bookId && <p className="text-xs text-red-500 mt-1">{errors.bookId.message}</p>}
         </div>
 
-        {selectedBook && (
-          <div className="bg-gray-50 border border-gray-100 rounded-xl px-4 py-3 text-sm text-gray-600">
-            <span className="font-medium">Em estoque para venda:</span>{" "}
-            <span className="font-bold text-gray-800">{selectedBook.quantityVenda} exemplar{selectedBook.quantityVenda !== 1 ? "es" : ""}</span>
-          </div>
-        )}
-
+        {/* Quantidade + Estoque na mesma linha */}
         <div>
-          <label className="block text-sm font-medium text-gray-700 mb-1.5">
-            Quantidade <span className="text-red-500">*</span>
-          </label>
-          <input
-            type="number"
-            min={1}
-            max={selectedBook?.quantityVenda ?? undefined}
-            {...register("quantity", {
-              required: "Informe a quantidade",
-              min: { value: 1, message: "Mínimo 1" },
-              validate: (v) =>
-                !selectedBook || Number(v) <= selectedBook.quantityVenda ||
-                `Máximo disponível: ${selectedBook.quantityVenda}`,
-            })}
-            className={inputClass}
-          />
+          <div className="flex items-end gap-4">
+            <div className="flex-1">
+              <label className="block text-sm font-medium text-gray-700 mb-1.5">
+                Quantidade <span className="text-red-500">*</span>
+              </label>
+              <input
+                type="number"
+                min={1}
+                max={selectedBook?.quantityVenda ?? undefined}
+                {...register("quantity", {
+                  required: "Informe a quantidade",
+                  min: { value: 1, message: "Mínimo 1" },
+                  validate: (v) =>
+                    !selectedBook || Number(v) <= selectedBook.quantityVenda ||
+                    `Máximo disponível: ${selectedBook.quantityVenda}`,
+                })}
+                className={inputClass}
+              />
+            </div>
+            <div className="flex-1">
+              <label className="block text-sm font-medium text-gray-500 mb-1.5">Em estoque para venda</label>
+              <div className="w-full border border-gray-200 rounded-xl px-3.5 py-2.5 text-sm bg-gray-50 text-gray-600 min-h-[42px]">
+                {selectedBook ? (
+                  <span>
+                    <span className="font-bold text-gray-800">{selectedBook.quantityVenda}</span>{" "}
+                    exemplar{selectedBook.quantityVenda !== 1 ? "es" : ""}
+                  </span>
+                ) : (
+                  <span className="text-gray-400">—</span>
+                )}
+              </div>
+            </div>
+          </div>
           {errors.quantity && <p className="text-xs text-red-500 mt-1">{errors.quantity.message}</p>}
         </div>
 
+        {/* Tipo de Pagamento */}
+        <div>
+          <label className="block text-sm font-medium text-gray-700 mb-1.5">
+            Tipo de Pagamento <span className="text-red-500">*</span>
+          </label>
+          <select
+            {...register("tipoPagamento", { required: "Selecione o tipo de pagamento" })}
+            className={selectClass}
+          >
+            <option value="">Selecione...</option>
+            {TIPOS_PAGAMENTO.map((t) => (
+              <option key={t.value} value={t.value}>
+                {t.label}
+              </option>
+            ))}
+          </select>
+          {errors.tipoPagamento && <p className="text-xs text-red-500 mt-1">{errors.tipoPagamento.message}</p>}
+        </div>
+
+        {/* Preço */}
         <div className="border border-gray-100 rounded-xl p-4 space-y-4 bg-gray-50">
           <p className="text-sm font-semibold text-gray-700">Preço</p>
           <div className="grid grid-cols-2 gap-4">
@@ -160,26 +209,43 @@ export default function NovaVendaForm({ books, defaultBookId }: Props) {
                 Preço de venda (R$)
               </label>
               <input
-                type="number"
-                min={0}
-                step="0.01"
+                type="text"
+                inputMode="decimal"
                 placeholder="0,00"
-                {...register("priceEach", { min: { value: 0, message: "Valor inválido" } })}
+                value={priceDisplay}
+                onChange={(e) => {
+                  const raw = e.target.value.replace(",", ".");
+                  setPriceDisplay(e.target.value);
+                  setValue("priceEach", raw, { shouldValidate: true });
+                }}
+                onFocus={(e) => {
+                  const raw = e.target.value.replace(/\./g, "").replace(",", ".");
+                  setPriceDisplay(isNaN(parseFloat(raw)) ? "" : String(parseFloat(raw)));
+                }}
+                onBlur={(e) => {
+                  const raw = e.target.value.replace(",", ".");
+                  setPriceDisplay(formatPrice(raw));
+                }}
                 className={inputClass}
               />
+              <input type="hidden" {...register("priceEach", { min: { value: 0, message: "Valor inválido" } })} />
               <p className="text-xs text-gray-400 mt-1">Edite para registrar desconto.</p>
               {errors.priceEach && <p className="text-xs text-red-500 mt-1">{errors.priceEach.message}</p>}
             </div>
           </div>
         </div>
 
+        {/* Observações */}
         <div>
           <label className="block text-sm font-medium text-gray-700 mb-1.5">Observações (opcional)</label>
           <textarea
-            {...register("notes")}
+            {...register("notes", { maxLength: { value: 500, message: "Máximo de 500 caracteres" } })}
+            maxLength={500}
             rows={3}
             className="w-full border border-gray-200 rounded-xl px-3.5 py-2.5 text-sm text-gray-800 focus:outline-none focus:ring-2 focus:ring-green-300 resize-none"
           />
+          <p className="text-xs text-gray-400 mt-1 text-right">{notesValue?.length ?? 0}/500</p>
+          {errors.notes && <p className="text-xs text-red-500 mt-1">{errors.notes.message}</p>}
         </div>
 
         {error && (
