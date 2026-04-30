@@ -79,7 +79,7 @@ export default async function UsuariosPage({
               </tr>
             </thead>
             <tbody>
-              {users.map((u) => (
+              {users.map((u: (typeof users)[number]) => (
                 <tr key={u.id} className="border-b border-gray-70 hover:bg-blue-50">
                   <td className="px-5 py-3">
                     <div className="flex items-center gap-2">

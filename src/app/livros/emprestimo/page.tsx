@@ -83,7 +83,7 @@ export default async function LivrosPage({
               </tr>
             </thead>
             <tbody>
-              {books.map((book) => {
+              {books.map((book: (typeof books)[number]) => {
                 const available = book.quantityEmprestimo - book._count.loans;
                 return (
                   <tr key={book.id} className="border-b border-gray-70 hover:bg-blue-50">
