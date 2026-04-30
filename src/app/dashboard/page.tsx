@@ -122,7 +122,7 @@ export default async function DashboardPage() {
             <p className="text-sm text-gray-400 text-center py-6">Nenhum empréstimo ainda</p>
           ) : (
             <div className="space-y-3">
-              {latestLoans.map((loan) => {
+              {latestLoans.map((loan: (typeof latestLoans)[number]) => {
                 const dias = daysSince(loan.loanedAt);
                 return (
                   <div key={loan.id} className="flex items-center gap-3">
@@ -162,7 +162,7 @@ export default async function DashboardPage() {
             <p className="text-sm text-gray-400 text-center py-6">Nenhuma venda ainda</p>
           ) : (
             <div className="space-y-3">
-              {latestSales.map((sale) => (
+              {latestSales.map((sale: (typeof latestSales)[number]) => (
                 <div key={sale.id} className="flex items-center gap-3">
                   <div className="w-8 h-8 rounded-lg bg-green-50 flex items-center justify-center shrink-0">
                     <ShoppingCart className="w-3.5 h-3.5 text-green-500" />
