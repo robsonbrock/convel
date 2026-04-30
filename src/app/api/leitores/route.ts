@@ -17,7 +17,7 @@ export async function GET() {
     include: { _count: { select: { loans: { where: { returnedAt: null } } } } },
   });
   return NextResponse.json(
-    borrowers.map((b) => ({ ...b, activeLoans: b._count.loans }))
+    borrowers.map((b: (typeof borrowers)[number]) => ({ ...b, activeLoans: b._count.loans }))
   );
 }
 

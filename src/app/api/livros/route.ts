@@ -24,7 +24,7 @@ export async function GET() {
   });
 
   return NextResponse.json(
-    books.map((b) => ({
+    books.map((b: (typeof books)[number]) => ({
       ...b,
       activeLoanCount: b._count.loans,
       availableCopies: b.quantityEmprestimo - b._count.loans,
