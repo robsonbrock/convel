@@ -35,7 +35,7 @@ export default async function DashboardPage() {
   ]);
 
   const availableForLoan = booksForLoan.filter(
-    (b) => b.quantityEmprestimo - b._count.loans > 0
+    (b: (typeof booksForLoan)[number]) => b.quantityEmprestimo - b._count.loans > 0
   ).length;
 
   return (
