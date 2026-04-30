@@ -87,7 +87,7 @@ export default async function LeitoresPage({
               </tr>
             </thead>
             <tbody>
-              {borrowers.map((b) => (
+              {borrowers.map((b: (typeof borrowers)[number]) => (
                 <tr key={b.id} className="border-b border-gray-70 hover:bg-blue-50">
                   <td className="px-5 py-3">
                     <p className="font-medium text-gray-800">{b.name}</p>
