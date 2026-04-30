@@ -31,7 +31,7 @@ export default async function VendasPage({
 
   const nLivro = normalizeStr(livro);
   const sales = nLivro
-    ? allSales.filter((s) => [s.book.title, s.book.author].some((f) => normalizeStr(f).includes(nLivro)))
+    ? allSales.filter((s: (typeof allSales)[number]) => [s.book.title, s.book.author].some((f) => normalizeStr(f).includes(nLivro)))
     : allSales;
 
   return (

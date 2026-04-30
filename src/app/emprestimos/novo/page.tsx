@@ -19,7 +19,7 @@ export default async function NovoEmprestimoPage({
     prisma.borrower.findMany({ orderBy: { name: "asc" } }),
   ]);
 
-  const availableBooks = books.map((b) => ({
+  const availableBooks = books.map((b: (typeof books)[number]) => ({
     id: b.id,
     title: b.title,
     author: b.author,

@@ -27,7 +27,7 @@ export default async function LeitoresPage({
 
   const nLeitor = normalizeStr(leitor);
   const borrowers = nLeitor
-    ? allBorrowers.filter((b) =>
+    ? allBorrowers.filter((b: (typeof allBorrowers)[number]) =>
         [b.name, b.cpf, b.email ?? ""].some((f) => normalizeStr(f).includes(nLeitor))
       )
     : allBorrowers;

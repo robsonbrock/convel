@@ -27,7 +27,7 @@ export default async function LivrosPage({
 
   const nLivro = normalizeStr(livro);
   const books = nLivro
-    ? allBooks.filter((b) => [b.title, b.author].some((f) => normalizeStr(f).includes(nLivro)))
+    ? allBooks.filter((b: (typeof allBooks)[number]) => [b.title, b.author].some((f) => normalizeStr(f).includes(nLivro)))
     : allBooks;
 
   const sh = (column: SortField, label: string, className?: string) => (

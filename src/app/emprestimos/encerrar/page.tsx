@@ -35,7 +35,7 @@ export default function EncerrarEmprestimoPage() {
     fetchLoans();
   }, []);
 
-  const filtered = loans.filter((l) => {
+  const filtered = loans.filter((l: Loan) => {
     const bk = !bookFilter || normalizeStr(l.book.title).includes(normalizeStr(bookFilter));
     const br = !borrowerFilter || normalizeStr(l.borrower.name).includes(normalizeStr(borrowerFilter));
     return bk && br;

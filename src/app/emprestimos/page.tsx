@@ -39,7 +39,7 @@ export default async function EmprestimosPage({
   const nLeitor = normalizeStr(leitor);
   const nLivro = normalizeStr(livro);
 
-  const loans = allLoans.filter((l) => {
+  const loans = allLoans.filter((l: (typeof allLoans)[number]) => {
     const leitorOk = !nLeitor || [l.borrower.name, l.borrower.cpf].some((f) => normalizeStr(f).includes(nLeitor));
     const livroOk = !nLivro || [l.book.title, l.book.author].some((f) => normalizeStr(f).includes(nLivro));
     return leitorOk && livroOk;
