@@ -18,8 +18,8 @@ export async function GET(req: NextRequest) {
         },
       },
     });
-    const borrowers = allBorrowers.filter((b): boolean =>
-      [b.name, b.cpf].some((f) => normalizeStr(f).includes(nLeitor))
+    const borrowers = allBorrowers.filter((b) =>
+      [b.name, b.cpf].some((f: string) => normalizeStr(f).includes(nLeitor))
     ).slice(0, 10);
     return NextResponse.json({ borrowers });
   }
