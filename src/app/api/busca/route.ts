@@ -41,7 +41,7 @@ export async function GET(req: NextRequest) {
     .slice(0, 10);
 
   return NextResponse.json({
-    books: books.map((b) => ({
+    books: books.map((b: (typeof allBooks)[number]) => ({
       id: b.id,
       title: b.title,
       author: b.author,
