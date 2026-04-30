@@ -4,7 +4,6 @@ import { ArrowLeftRight, Plus, CheckCircle } from "lucide-react";
 import SortableHeader from "@/components/ui/SortableHeader";
 import EmprestimosFilterBar from "@/components/emprestimos/EmprestimosFilterBar";
 import EmprestimosTable from "@/components/emprestimos/EmprestimosTable";
-import type { Prisma } from "@prisma/client";
 import { normalizeStr } from "@/lib/utils";
 
 type SortOrder = "asc" | "desc";
@@ -19,7 +18,7 @@ export default async function EmprestimosPage({
   const leitor = searchParams.leitor?.trim() ?? "";
   const livro = searchParams.livro?.trim() ?? "";
 
-  let orderBy: Prisma.LoanOrderByWithRelationInput;
+  let orderBy: any;
   if (sort === "bookTitle") {
     orderBy = { book: { title: order } };
   } else if (sort === "borrowerName") {
