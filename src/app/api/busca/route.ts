@@ -37,7 +37,7 @@ export async function GET(req: NextRequest) {
   });
 
   const books = allBooks
-    .filter((b) => [b.title, b.author].some((f) => normalizeStr(f).includes(nQ)))
+    .filter((b: (typeof allBooks)[number]) => [b.title, b.author].some((f: string) => normalizeStr(f).includes(nQ)))
     .slice(0, 10);
 
   return NextResponse.json({
