@@ -1,36 +1,82 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# ConVEL - Sistema de Controle de Vendas e Empréstimos
 
-## Getting Started
+Sistema web para centralizar o controle de vendas e empréstimos de livros do Centro Espírita.
 
-First, run the development server:
+## 🚀 Fase 1: Conclusão
+
+✅ **Setup Inicial Completo**
+- ✅ Projeto Next.js 16 com TypeScript
+- ✅ Tailwind CSS configurado (Design Google/Apple)
+- ✅ Autenticação com CPF + Email + Senha
+- ✅ Sistema de roles (super_admin, admin, vendedor)
+- ✅ Schema SQL com 8 tabelas
+- ✅ Componentes UI base (Button, Input, Card)
+- ✅ Layout com Header e Sidebar
+- ✅ Homepage/Dashboard vazia pronta para evoluir
+
+## 📋 Próximas Fases
+
+- **Fase 2:** Gestão de Usuários (super-admin)
+- **Fase 3:** Gestão de Categorias e Autores
+- **Fase 4:** Gestão de Livros
+- **Fase 5:** Registro de Vendas
+- **Fase 6:** Registro de Empréstimos
+- **Fase 7+:** Relatórios e Dashboards
+
+## 🛠️ Setup Inicial
+
+### 1. Clonar/Usar o Projeto
+
+```bash
+cd C:\Users\robso\dev\convel
+```
+
+### 2. Criar Projeto Supabase
+
+1. Acesse https://supabase.com
+2. Crie uma nova organização e projeto
+3. Copie as credenciais:
+   - **URL do Projeto:** https://xxxxx.supabase.co
+   - **Chave Anon:** (disponível em Settings > API)
+
+### 3. Configurar `.env.local`
+
+Edite `C:\Users\robso\dev\convel\.env.local`:
+
+```env
+NEXT_PUBLIC_SUPABASE_URL=https://your-project.supabase.co
+NEXT_PUBLIC_SUPABASE_ANON_KEY=your-anon-key-here
+JWT_SECRET=sua-chave-secreta-com-mais-de-32-caracteres
+NEXT_PUBLIC_APP_URL=http://localhost:3000
+```
+
+### 4. Executar Migrations
+
+No painel Supabase, acesse **SQL Editor** e execute:
+
+1. `supabase/migrations/001_create_schema.sql`
+2. `supabase/migrations/002_seed_data.sql`
+
+**Resultado esperado:**
+- 8 tabelas criadas
+- 11 categorias pré-cadastradas
+
+### 5. Iniciar Dev Server
 
 ```bash
 npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+Acesse: http://localhost:3000
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+---
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+## 👥 Roles e Permissões
 
-## Learn More
+- **super_admin:** Acesso total
+- **admin:** Tudo exceto gestão de usuários
+- **vendedor:** Apenas vendas e empréstimos
 
-To learn more about Next.js, take a look at the following resources:
+---
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
-
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
-
-## Deploy on Vercel
-
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
-
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+**Desenvolvido com ❤️ para o Centro Espírita**
