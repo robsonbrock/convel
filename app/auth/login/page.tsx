@@ -1,39 +1,30 @@
 'use client';
 
 import { useState } from 'react';
-import { useRouter } from 'next/navigation';
 import { Button } from '@/components/ui/Button';
-import { Input } from '@/components/ui/Input';
 import { Card } from '@/components/ui/Card';
 
 export default function LoginPage() {
-  const router = useRouter();
-  const [cpf, setCpf] = useState('');
-  const [email, setEmail] = useState('');
-  const [senha, setSenha] = useState('');
-  const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
+  const [error, setError] = useState('');
 
-  async function handleLogin(e: React.FormEvent) {
-    e.preventDefault();
+  async function handleGoogleLogin() {
     setError('');
     setLoading(true);
 
     try {
-      const response = await fetch('/api/auth/login', {
+      const response = await fetch('/api/auth/google', {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ cpf, email, senha }),
       });
 
       if (!response.ok) {
         const data = await response.json();
-        setError(data.message || 'Falha ao fazer login');
+        setError(data.message || 'Falha ao conectar com Google');
         return;
       }
 
-      router.push('/dashboard');
-      router.refresh();
+      const { url } = await response.json();
+      window.location.href = url;
     } catch (err) {
       setError('Erro ao conectar com o servidor');
       console.error(err);
@@ -55,34 +46,7 @@ export default function LoginPage() {
           </p>
         </div>
 
-        <form onSubmit={handleLogin} className="space-y-4">
-          <Input
-            label="CPF"
-            type="text"
-            placeholder="000.000.000-00"
-            value={cpf}
-            onChange={(e) => setCpf(e.target.value)}
-            required
-          />
-
-          <Input
-            label="Email"
-            type="email"
-            placeholder="seu@email.com"
-            value={email}
-            onChange={(e) => setEmail(e.target.value)}
-            required
-          />
-
-          <Input
-            label="Senha"
-            type="password"
-            placeholder="••••••••"
-            value={senha}
-            onChange={(e) => setSenha(e.target.value)}
-            required
-          />
-
+        <div className="space-y-4">
           {error && (
             <div className="bg-red-50 border border-red-200 rounded-lg p-3">
               <p className="text-sm text-red-700">{error}</p>
@@ -90,15 +54,15 @@ export default function LoginPage() {
           )}
 
           <Button
-            type="submit"
+            onClick={handleGoogleLogin}
             variant="primary"
             size="lg"
-            className="w-full mt-6"
+            className="w-full"
             disabled={loading}
           >
-            {loading ? 'Entrando...' : 'Entrar'}
+            {loading ? 'Conectando...' : '🔐 Entrar com Google'}
           </Button>
-        </form>
+        </div>
 
         <p className="text-center text-xs text-gray-500 mt-6">
           Acesso restrito para usuários autorizados
