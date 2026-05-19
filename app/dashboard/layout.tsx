@@ -1,32 +1,60 @@
 'use client';
 
 import { useEffect, useState } from 'react';
+import { useRouter } from 'next/navigation';
 import { Header } from '@/components/Header';
 import { Sidebar } from '@/components/Sidebar';
 import { UsuarioSession } from '@/lib/auth';
-
-const mockUsuario: UsuarioSession = {
-  id: '1',
-  cpf: '000.000.000-00',
-  nome: 'Usuário',
-  email: 'user@example.com',
-  role: 'vendedor',
-};
+import { createClient } from '@supabase/supabase-js';
 
 export default function DashboardLayout({
   children,
 }: {
   children: React.ReactNode;
 }) {
-  const [usuario, setUsuario] = useState<UsuarioSession>(mockUsuario);
+  const router = useRouter();
+  const [usuario, setUsuario] = useState<UsuarioSession | null>(null);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    setLoading(false);
-  }, []);
+    async function checkAuth() {
+      try {
+        const supabase = createClient(
+          process.env.NEXT_PUBLIC_SUPABASE_URL!,
+          process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
+        );
+
+        const { data: { session } } = await supabase.auth.getSession();
+
+        if (!session?.user) {
+          router.push('/auth/login');
+          return;
+        }
+
+        setUsuario({
+          id: session.user.id,
+          cpf: session.user.id,
+          nome: session.user.user_metadata?.full_name || session.user.email || 'Usuário',
+          email: session.user.email || '',
+          role: 'vendedor',
+        });
+      } catch (error) {
+        console.error('Error checking auth:', error);
+        router.push('/auth/login');
+      } finally {
+        setLoading(false);
+      }
+    }
+
+    checkAuth();
+  }, [router]);
 
   if (loading) {
     return <div className="min-h-screen flex items-center justify-center">Carregando...</div>;
+  }
+
+  if (!usuario) {
+    return null;
   }
 
   return (
