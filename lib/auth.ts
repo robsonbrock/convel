@@ -1,6 +1,6 @@
 import bcrypt from 'bcryptjs';
 import jwt from 'jsonwebtoken';
-import { supabase } from './supabase';
+import { getSupabase } from './supabase';
 
 const JWT_SECRET = process.env.JWT_SECRET || 'your-secret-key-here-min-32-chars';
 
@@ -47,7 +47,7 @@ export function verifyToken(token: string): UsuarioSession | null {
 // Login
 export async function loginUsuario(credentials: LoginCredentials): Promise<{ token: string; usuario: UsuarioSession } | null> {
   try {
-    const { data, error } = await supabase
+    const { data, error } = await getSupabase()
       .from('usuarios')
       .select('id, cpf, nome, email, role, senha')
       .eq('cpf', credentials.cpf)
@@ -95,7 +95,7 @@ export async function criarUsuario(
   try {
     const senhaHash = await hashPassword(senha);
 
-    const { data, error } = await supabase
+    const { data, error } = await getSupabase()
       .from('usuarios')
       .insert([
         {
