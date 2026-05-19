@@ -1,5 +1,4 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { verifyToken } from './lib/auth';
 
 const publicRoutes = ['/auth/login'];
 
@@ -15,14 +14,6 @@ export function middleware(request: NextRequest) {
   // Se não tem token e não é rota pública, redirecionar para login
   if (!token) {
     return NextResponse.redirect(new URL('/auth/login', request.url));
-  }
-
-  // Verificar validade do token
-  const session = verifyToken(token);
-  if (!session) {
-    const response = NextResponse.redirect(new URL('/auth/login', request.url));
-    response.cookies.delete('token');
-    return response;
   }
 
   return NextResponse.next();
