@@ -2,6 +2,8 @@
 
 Sistema web para centralizar o controle de vendas e empréstimos de livros do Centro Espírita.
 
+**Status:** Em desenvolvimento | Fase 1 ✅
+
 ## 🚀 Fase 1: Conclusão
 
 ✅ **Setup Inicial Completo**
