@@ -13,12 +13,16 @@ export default function LoginPage() {
   useEffect(() => {
     // Processar token do hash (quando vindo do OAuth redirect)
     const hash = window.location.hash.substring(1);
+    console.log('[Login] useEffect: hash =', hash ? hash.substring(0, 50) + '...' : 'vazio');
+
     if (hash && hash.includes('access_token')) {
       const params = new URLSearchParams(hash);
       const accessToken = params.get('access_token');
 
       if (accessToken) {
-        console.log('[Login] Token recebido do hash, salvando no localStorage e redirecionando...');
+        console.log('[Login] Token recebido:', accessToken.substring(0, 30) + '...');
+        setLoading(true);
+
         // Salvar token no localStorage para que possa ser enviado via API
         localStorage.setItem('access_token', accessToken);
 
@@ -26,18 +30,29 @@ export default function LoginPage() {
         window.history.replaceState(null, '', '/auth/login');
 
         // Chamar endpoint para set o cookie via servidor
+        console.log('[Login] Chamando /api/auth/set-cookie...');
         fetch('/api/auth/set-cookie', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({ token: accessToken }),
         })
-          .then(() => {
-            console.log('[Login] Cookie setado, redirecionando para dashboard...');
-            router.push('/dashboard');
+          .then((res) => {
+            console.log('[Login] Resposta do set-cookie:', res.status);
+            return res.json();
+          })
+          .then((data) => {
+            console.log('[Login] Dados da resposta:', data);
+            console.log('[Login] Aguardando 500ms antes de redirecionar...');
+            // Aguardar um pouco para garantir que o cookie foi setado
+            setTimeout(() => {
+              console.log('[Login] Redirecionando para /dashboard...');
+              router.push('/dashboard');
+            }, 500);
           })
           .catch((err) => {
             console.error('[Login] Erro ao set cookie:', err);
             setError('Erro ao configurar sessão');
+            setLoading(false);
           });
       }
     }
