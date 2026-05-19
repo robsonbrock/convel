@@ -18,17 +18,27 @@ export default function LoginPage() {
       const accessToken = params.get('access_token');
 
       if (accessToken) {
-        console.log('[Login] Token recebido do hash, setando cookie...');
-        // Set cookie e redirecionar para dashboard
-        document.cookie = `token=${accessToken}; path=/; max-age=${7 * 24 * 60 * 60}; SameSite=Lax`;
+        console.log('[Login] Token recebido do hash, salvando no localStorage e redirecionando...');
+        // Salvar token no localStorage para que possa ser enviado via API
+        localStorage.setItem('access_token', accessToken);
 
         // Limpar o hash da URL
         window.history.replaceState(null, '', '/auth/login');
 
-        // Redirecionar para dashboard
-        setTimeout(() => {
-          router.push('/dashboard');
-        }, 100);
+        // Chamar endpoint para set o cookie via servidor
+        fetch('/api/auth/set-cookie', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ token: accessToken }),
+        })
+          .then(() => {
+            console.log('[Login] Cookie setado, redirecionando para dashboard...');
+            router.push('/dashboard');
+          })
+          .catch((err) => {
+            console.error('[Login] Erro ao set cookie:', err);
+            setError('Erro ao configurar sessão');
+          });
       }
     }
   }, [router]);
