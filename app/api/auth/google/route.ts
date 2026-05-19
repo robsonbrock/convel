@@ -10,6 +10,12 @@ export async function POST(request: NextRequest) {
         `${request.headers.get('x-forwarded-proto')}://${request.headers.get('host')}` :
         `https://convel.vercel.app`);
 
+    console.log('[Google Auth] Starting OAuth flow:', {
+      appUrl,
+      redirectTo: `${appUrl}/api/auth/callback`,
+      env: process.env.NEXT_PUBLIC_APP_URL,
+    });
+
     const { data, error } = await supabase.auth.signInWithOAuth({
       provider: 'google',
       options: {
@@ -18,12 +24,14 @@ export async function POST(request: NextRequest) {
     });
 
     if (error) {
+      console.error('[Google Auth] Error:', error);
       return NextResponse.json(
         { message: 'Erro ao conectar com Google' },
         { status: 400 }
       );
     }
 
+    console.log('[Google Auth] OAuth URL returned:', data.url);
     return NextResponse.json({ url: data.url }, { status: 200 });
   } catch (error) {
     console.error('Google auth error:', error);
