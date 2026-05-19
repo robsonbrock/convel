@@ -1,12 +1,37 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
+import { useRouter } from 'next/navigation';
 import { Button } from '@/components/ui/Button';
 import { Card } from '@/components/ui/Card';
 
 export default function LoginPage() {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
+  const router = useRouter();
+
+  useEffect(() => {
+    // Processar token do hash (quando vindo do OAuth redirect)
+    const hash = window.location.hash.substring(1);
+    if (hash && hash.includes('access_token')) {
+      const params = new URLSearchParams(hash);
+      const accessToken = params.get('access_token');
+
+      if (accessToken) {
+        console.log('[Login] Token recebido do hash, setando cookie...');
+        // Set cookie e redirecionar para dashboard
+        document.cookie = `token=${accessToken}; path=/; max-age=${7 * 24 * 60 * 60}; SameSite=Lax`;
+
+        // Limpar o hash da URL
+        window.history.replaceState(null, '', '/auth/login');
+
+        // Redirecionar para dashboard
+        setTimeout(() => {
+          router.push('/dashboard');
+        }, 100);
+      }
+    }
+  }, [router]);
 
   async function handleGoogleLogin() {
     setError('');
