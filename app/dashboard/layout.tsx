@@ -4,44 +4,29 @@ import { useEffect, useState } from 'react';
 import { Header } from '@/components/Header';
 import { Sidebar } from '@/components/Sidebar';
 import { UsuarioSession } from '@/lib/auth';
-import { useRouter } from 'next/navigation';
+
+const mockUsuario: UsuarioSession = {
+  id: '1',
+  cpf: '000.000.000-00',
+  nome: 'Usuário',
+  email: 'user@example.com',
+  role: 'vendedor',
+};
 
 export default function DashboardLayout({
   children,
 }: {
   children: React.ReactNode;
 }) {
-  const router = useRouter();
-  const [usuario, setUsuario] = useState<UsuarioSession | null>(null);
+  const [usuario, setUsuario] = useState<UsuarioSession>(mockUsuario);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    async function fetchSession() {
-      try {
-        const response = await fetch('/api/auth/me');
-        if (!response.ok) {
-          router.push('/auth/login');
-          return;
-        }
-        const data = await response.json();
-        setUsuario(data.usuario);
-      } catch (error) {
-        console.error('Error fetching session:', error);
-        router.push('/auth/login');
-      } finally {
-        setLoading(false);
-      }
-    }
-
-    fetchSession();
-  }, [router]);
+    setLoading(false);
+  }, []);
 
   if (loading) {
     return <div className="min-h-screen flex items-center justify-center">Carregando...</div>;
-  }
-
-  if (!usuario) {
-    return null;
   }
 
   return (
