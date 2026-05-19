@@ -22,7 +22,7 @@
 
 ## Passo 2: Configurar `.env.local`
 
-Edite `C:\Users\robso\dev\convel\.env.local`:
+Crie arquivo `C:\dev\convel\.env.local`:
 
 ```env
 NEXT_PUBLIC_SUPABASE_URL=https://xxxxxx.supabase.co
@@ -30,6 +30,8 @@ NEXT_PUBLIC_SUPABASE_ANON_KEY=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...
 JWT_SECRET=sua-chave-super-secreta-com-mais-de-32-caracteres-aqui
 NEXT_PUBLIC_APP_URL=http://localhost:3000
 ```
+
+**Nota:** Este arquivo NÃO será commitado no Git (está em .gitignore)
 
 **Exemplo JWT_SECRET:**
 ```
@@ -139,6 +141,32 @@ Após fazer login, você deve ver:
 
 ### Sem permissão para acessar telas
 → Verifique o `role` do usuário no banco (deve ser `super_admin`)
+
+---
+
+## Passo 7: Deploy na Vercel
+
+### 7.1. Conectar GitHub
+1. Acesse https://vercel.com/dashboard
+2. Clique "Add New > Project"
+3. Selecione "GitHub"
+4. Selecione repo: `robsonbrock/convel`
+
+### 7.2. Configurar Variáveis de Ambiente
+1. Após importar repo, vá para "Settings > Environment Variables"
+2. Adicione as 3 variáveis:
+   - `NEXT_PUBLIC_SUPABASE_URL`
+   - `NEXT_PUBLIC_SUPABASE_ANON_KEY`
+   - `JWT_SECRET`
+
+### 7.3. Deploy
+1. Clique "Deploy"
+2. Aguarde a build completar (2-3 min)
+3. Sua app estará em: `https://convel.vercel.app` (ou nome customizado)
+
+### 7.4. Deployments Automáticos
+- Push para `main` → Deploy automático para produção
+- Push para `develop` → Deploy automático (preview)
 
 ---
 

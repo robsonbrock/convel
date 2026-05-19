@@ -28,8 +28,10 @@ Sistema web para centralizar o controle de vendas e empréstimos de livros do Ce
 ### 1. Clonar/Usar o Projeto
 
 ```bash
-cd C:\Users\robso\dev\convel
+cd C:\dev\convel
 ```
+
+**Nota:** Projeto também disponível em GitHub: https://github.com/robsonbrock/convel
 
 ### 2. Criar Projeto Supabase
 
@@ -76,6 +78,25 @@ Acesse: http://localhost:3000
 - **super_admin:** Acesso total
 - **admin:** Tudo exceto gestão de usuários
 - **vendedor:** Apenas vendas e empréstimos
+
+---
+
+## 🚀 Deploy na Vercel
+
+### Quick Deploy
+1. Faça push para GitHub: `https://github.com/robsonbrock/convel`
+2. Acesse Vercel Dashboard
+3. Clique "Add New > Project"
+4. Selecione repo `robsonbrock/convel`
+5. Configure variáveis de ambiente (veja `.env.production.example`)
+6. Clique "Deploy"
+
+### Variáveis de Ambiente (Vercel Settings)
+```
+NEXT_PUBLIC_SUPABASE_URL=https://xxx.supabase.co
+NEXT_PUBLIC_SUPABASE_ANON_KEY=eyJ...
+JWT_SECRET=your-secret-key-32-chars
+```
 
 ---
 

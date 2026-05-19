@@ -1,0 +1,13 @@
+.env.local
+.env.*.local
+node_modules/
+.next/
+out/
+build/
+dist/
+.git/
+.gitignore
+README.md
+SETUP.md
+*.md
+supabase/
