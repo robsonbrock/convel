@@ -58,6 +58,7 @@ export interface MenuItem {
   href: string;
   icon: string;
   roles: UserRole[];
+  disabled?: boolean;
 }
 
 export const menuItems: MenuItem[] = [
@@ -102,11 +103,13 @@ export const menuItems: MenuItem[] = [
     href: '/vendas',
     icon: '💰',
     roles: ['super_admin', 'admin', 'vendedor'],
+    disabled: true,
   },
   {
     label: 'Empréstimos',
     href: '/emprestimos',
     icon: '🔄',
     roles: ['super_admin', 'admin', 'vendedor'],
+    disabled: true,
   },
 ];

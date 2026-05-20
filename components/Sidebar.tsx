@@ -95,14 +95,15 @@ export function Sidebar({ usuario, open, onClose }: SidebarProps) {
       <List sx={{ p: 0, flex: 1, overflow: 'auto' }}>
         {visibleItems.map(item => {
           const isActive = pathname === item.href;
+          const isDisabled = item.disabled || false;
           const icon = iconMap[item.label] || 'dashboard';
 
           return (
             <ListItem
               key={item.href}
-              component={Link}
-              href={item.href}
-              onClick={() => isMobile && onClose()}
+              component={isDisabled ? 'div' : Link}
+              href={isDisabled ? undefined : item.href}
+              onClick={() => !isDisabled && isMobile && onClose()}
               sx={{
                 pl: 2,
                 pr: 2,
@@ -113,9 +114,11 @@ export function Sidebar({ usuario, open, onClose }: SidebarProps) {
                 position: 'relative',
                 transition: 'all 200ms cubic-bezier(0.4, 0, 0.2, 1)',
                 backgroundColor: isActive ? 'action.selected' : 'transparent',
-                color: isActive ? 'primary.main' : 'text.primary',
+                color: isDisabled ? 'text.disabled' : isActive ? 'primary.main' : 'text.primary',
                 fontWeight: isActive ? 600 : 500,
-                '&::before': isActive ? {
+                cursor: isDisabled ? 'not-allowed' : 'pointer',
+                opacity: isDisabled ? 0.6 : 1,
+                '&::before': isActive && !isDisabled ? {
                   content: '""',
                   position: 'absolute',
                   left: 0,
@@ -127,15 +130,15 @@ export function Sidebar({ usuario, open, onClose }: SidebarProps) {
                   background: 'linear-gradient(180deg, #4f46e5 0%, #7c3aed 100%)',
                 } : {},
                 '&:hover': {
-                  backgroundColor: isActive ? 'action.selected' : 'action.hover',
-                  pl: 2.5,
+                  backgroundColor: !isDisabled && !isActive ? 'action.hover' : isActive ? 'action.selected' : 'transparent',
+                  pl: !isDisabled ? 2.5 : 2,
                 },
               }}
             >
               <ListItemIcon
                 sx={{
                   minWidth: 40,
-                  color: isActive ? 'primary.main' : 'text.secondary',
+                  color: isDisabled ? 'text.disabled' : isActive ? 'primary.main' : 'text.secondary',
                   transition: 'color 200ms ease',
                 }}
               >
