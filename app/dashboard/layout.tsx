@@ -1,10 +1,11 @@
 'use client';
 
 import { useEffect, useState } from 'react';
+import { useRouter } from 'next/navigation';
 import { Header } from '@/components/Header';
 import { Sidebar } from '@/components/Sidebar';
 import { UsuarioSession } from '@/lib/auth';
-import { useRouter } from 'next/navigation';
+import { createClient } from '@supabase/supabase-js';
 
 export default function DashboardLayout({
   children,
@@ -16,24 +17,36 @@ export default function DashboardLayout({
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    async function fetchSession() {
+    async function checkAuth() {
       try {
-        const response = await fetch('/api/auth/me');
-        if (!response.ok) {
+        const supabase = createClient(
+          process.env.NEXT_PUBLIC_SUPABASE_URL!,
+          process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
+        );
+
+        const { data: { session } } = await supabase.auth.getSession();
+
+        if (!session?.user) {
           router.push('/auth/login');
           return;
         }
-        const data = await response.json();
-        setUsuario(data.usuario);
+
+        setUsuario({
+          id: session.user.id,
+          cpf: session.user.id,
+          nome: session.user.user_metadata?.full_name || session.user.email || 'Usuário',
+          email: session.user.email || '',
+          role: 'vendedor',
+        });
       } catch (error) {
-        console.error('Error fetching session:', error);
+        console.error('Error checking auth:', error);
         router.push('/auth/login');
       } finally {
         setLoading(false);
       }
     }
 
-    fetchSession();
+    checkAuth();
   }, [router]);
 
   if (loading) {

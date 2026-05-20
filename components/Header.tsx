@@ -15,10 +15,17 @@ export function Header({ usuario }: HeaderProps) {
   const [openMenu, setOpenMenu] = useState(false);
 
   async function handleLogout() {
-    const response = await fetch('/api/auth/logout', { method: 'POST' });
-    if (response.ok) {
+    try {
+      const { createClient } = await import('@supabase/supabase-js');
+      const supabase = createClient(
+        process.env.NEXT_PUBLIC_SUPABASE_URL!,
+        process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
+      );
+      await supabase.auth.signOut();
       router.push('/auth/login');
       router.refresh();
+    } catch (error) {
+      console.error('Logout error:', error);
     }
   }
 

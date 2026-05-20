@@ -1,29 +1,68 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { getSessionFromToken } from '@/lib/auth';
+import { getSupabaseAsync } from '@/lib/supabase';
 
 export async function GET(request: NextRequest) {
   try {
-    const token = request.cookies.get('token')?.value;
+    const supabase = await getSupabaseAsync();
 
-    if (!token) {
+    // Get the session from Supabase
+    const { data: { session }, error } = await supabase.auth.getSession();
+
+    if (error || !session?.user) {
+      console.log('[ME] No session found:', error?.message);
       return NextResponse.json(
         { message: 'Não autenticado' },
         { status: 401 }
       );
     }
 
-    const session = getSessionFromToken(token);
+    // Get user info from database
+    const { data: usuario, error: dbError } = await supabase
+      .from('usuarios')
+      .select('id, cpf, nome, email, role')
+      .eq('email', session.user.email)
+      .single();
 
-    if (!session) {
+    if (dbError || !usuario) {
+      console.log('[ME] User not found in database:', dbError?.message);
+      // Create user if not exists
+      const { data: newUsuario, error: createError } = await supabase
+        .from('usuarios')
+        .insert([
+          {
+            email: session.user.email,
+            nome: session.user.user_metadata?.full_name || session.user.email?.split('@')[0],
+            cpf: session.user.id, // Use Supabase user ID as placeholder
+            role: 'vendedor', // Default role
+          },
+        ])
+        .select('id, cpf, nome, email, role')
+        .single();
+
+      if (createError) {
+        console.error('[ME] Error creating user:', createError);
+        return NextResponse.json(
+          { message: 'Erro ao criar usuário' },
+          { status: 500 }
+        );
+      }
+
       return NextResponse.json(
-        { message: 'Token inválido ou expirado' },
-        { status: 401 }
+        {
+          usuario: newUsuario,
+        },
+        { status: 200 }
       );
     }
 
-    return NextResponse.json({ usuario: session }, { status: 200 });
+    return NextResponse.json(
+      {
+        usuario,
+      },
+      { status: 200 }
+    );
   } catch (error) {
-    console.error('Session error:', error);
+    console.error('[ME] Error:', error);
     return NextResponse.json(
       { message: 'Erro ao obter sessão' },
       { status: 500 }
