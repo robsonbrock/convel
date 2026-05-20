@@ -1,29 +1,30 @@
 import React from 'react';
 
 interface ButtonProps extends React.ButtonHTMLAttributes<HTMLButtonElement> {
-  variant?: 'primary' | 'outline' | 'ghost';
+  variant?: 'filled' | 'tonal' | 'outlined' | 'text';
   size?: 'sm' | 'md' | 'lg';
   children: React.ReactNode;
 }
 
 export function Button({
-  variant = 'primary',
+  variant = 'filled',
   size = 'md',
   className = '',
   ...props
 }: ButtonProps) {
-  const baseStyles = 'font-medium rounded-lg transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed';
+  const baseStyles = 'font-medium rounded-md transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed active:scale-95 focus:outline-none focus:ring-2 focus:ring-offset-2';
 
   const variants = {
-    primary: 'bg-blue-600 text-white hover:bg-blue-700 active:bg-blue-800',
-    outline: 'border border-gray-300 text-gray-700 hover:bg-gray-50 active:bg-gray-100',
-    ghost: 'text-gray-600 hover:bg-gray-100 active:bg-gray-200',
+    filled: 'bg-primary-40 text-primary-99 hover:shadow-elevation-1 focus:ring-primary-40',
+    tonal: 'bg-secondary-90 text-secondary-40 hover:shadow-elevation-1 focus:ring-secondary-40',
+    outlined: 'border-2 border-secondary-50 text-secondary-40 hover:bg-primary-5 focus:ring-secondary-40',
+    text: 'text-primary-40 hover:bg-primary-95 focus:ring-primary-40',
   };
 
   const sizes = {
-    sm: 'px-3 py-1 text-sm',
-    md: 'px-4 py-2 text-base',
-    lg: 'px-6 py-3 text-lg',
+    sm: 'px-3 py-2 text-label-sm',
+    md: 'px-6 py-3 text-label-md',
+    lg: 'px-8 py-4 text-label-lg',
   };
 
   return (
