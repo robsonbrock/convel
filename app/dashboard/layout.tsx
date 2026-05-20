@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
+import { Box, Container } from '@mui/material';
 import { Header } from '@/components/Header';
 import { Sidebar } from '@/components/Sidebar';
 import { UsuarioSession } from '@/lib/auth';
@@ -15,6 +16,7 @@ export default function DashboardLayout({
   const router = useRouter();
   const [usuario, setUsuario] = useState<UsuarioSession | null>(null);
   const [loading, setLoading] = useState(true);
+  const [drawerOpen, setDrawerOpen] = useState(false);
 
   useEffect(() => {
     async function checkAuth() {
@@ -50,7 +52,16 @@ export default function DashboardLayout({
   }, [router]);
 
   if (loading) {
-    return <div className="min-h-screen flex items-center justify-center">Carregando...</div>;
+    return (
+      <Box
+        display="flex"
+        alignItems="center"
+        justifyContent="center"
+        minHeight="100vh"
+      >
+        Carregando...
+      </Box>
+    );
   }
 
   if (!usuario) {
@@ -58,14 +69,33 @@ export default function DashboardLayout({
   }
 
   return (
-    <div className="min-h-screen bg-gray-50">
-      <Header usuario={usuario} />
-      <div className="flex">
-        <Sidebar usuario={usuario} />
-        <main className="flex-1 ml-64 p-6">
-          {children}
-        </main>
-      </div>
-    </div>
+    <Box display="flex" flexDirection="column" minHeight="100vh">
+      <Header
+        usuario={usuario}
+        onMenuToggle={() => setDrawerOpen(!drawerOpen)}
+      />
+
+      <Box display="flex" flex={1}>
+        <Sidebar
+          usuario={usuario}
+          open={drawerOpen}
+          onClose={() => setDrawerOpen(false)}
+        />
+
+        <Box
+          component="main"
+          sx={{
+            flexGrow: 1,
+            p: 3,
+            ml: { xs: 0, md: '250px' },
+            mt: { xs: '56px', sm: '64px' },
+          }}
+        >
+          <Container maxWidth="lg">
+            {children}
+          </Container>
+        </Box>
+      </Box>
+    </Box>
   );
 }
