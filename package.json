@@ -6,7 +6,8 @@
     "dev": "next dev",
     "build": "next build",
     "start": "next start",
-    "lint": "eslint"
+    "lint": "eslint",
+    "seed": "node scripts/seed-categorias-api.js"
   },
   "dependencies": {
     "@emotion/react": "^11.11.0",
