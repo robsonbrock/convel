@@ -14,6 +14,7 @@ import {
   Chip,
   FormHelperText,
   Paper,
+  InputAdornment,
 } from '@mui/material';
 import DeleteIcon from '@mui/icons-material/Delete';
 import { useRouter } from 'next/navigation';
@@ -96,6 +97,41 @@ export function FormLivro({ mode, livro, onSubmit }: FormLivroProps) {
       setErrors((prev) => ({
         ...prev,
         autores: '',
+      }));
+    }
+  };
+
+  const handleCategoriaChange = async (newValue: Categoria | string | null) => {
+    if (typeof newValue === 'string') {
+      // É uma nova categoria digitada
+      const novaCategoria: Categoria = { id: '', nome: newValue };
+      try {
+        const response = await fetch('/api/categorias', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ nome: newValue }),
+        });
+        if (response.ok) {
+          const data = await response.json();
+          const categoria = data.categoria || novaCategoria;
+          handleInputChange('categoria_id', categoria.id);
+          // Recarregar categorias para mostrar a nova
+          await fetchCategorias();
+          return;
+        }
+      } catch (error) {
+        console.error('Erro ao criar categoria:', error);
+      }
+      handleInputChange('categoria_id', novaCategoria.id);
+    } else if (newValue) {
+      handleInputChange('categoria_id', newValue.id);
+    } else {
+      handleInputChange('categoria_id', '');
+    }
+    if (errors.categoria_id) {
+      setErrors((prev) => ({
+        ...prev,
+        categoria_id: '',
       }));
     }
   };
@@ -286,23 +322,24 @@ export function FormLivro({ mode, livro, onSubmit }: FormLivroProps) {
 
           {/* Categoria */}
           <Grid item xs={12} sm={6}>
-            <Select
+            <Autocomplete
               fullWidth
-              value={formData.categoria_id}
-              onChange={(e) => handleInputChange('categoria_id', e.target.value)}
-              displayEmpty
-              error={!!errors.categoria_id}
-            >
-              <MenuItem value="">
-                <em>Selecione uma categoria *</em>
-              </MenuItem>
-              {categorias.map((cat) => (
-                <MenuItem key={cat.id} value={cat.id}>
-                  {cat.nome}
-                </MenuItem>
-              ))}
-            </Select>
-            {errors.categoria_id && <FormHelperText error>{errors.categoria_id}</FormHelperText>}
+              freeSolo
+              options={categorias}
+              getOptionLabel={(option) => typeof option === 'string' ? option : option.nome}
+              value={categorias.find((c) => c.id === formData.categoria_id) || null}
+              onChange={(_, newValue) => handleCategoriaChange(newValue)}
+              renderInput={(params) => (
+                <TextField
+                  {...params}
+                  label="Categoria *"
+                  placeholder="Digite para buscar ou criar nova categoria"
+                  error={!!errors.categoria_id}
+                  helperText={errors.categoria_id || 'Digite um nome e pressione Enter para criar uma nova categoria'}
+                />
+              )}
+              noOptionsText="Nenhuma categoria encontrada. Digite para criar nova."
+            />
           </Grid>
 
           {/* Ano */}
@@ -372,6 +409,9 @@ export function FormLivro({ mode, livro, onSubmit }: FormLivroProps) {
               helperText={errors.preco_venda}
               inputProps={{ step: 0.01, min: 0 }}
               placeholder="0.00"
+              InputProps={{
+                startAdornment: <InputAdornment position="start">R$</InputAdornment>,
+              }}
             />
           </Grid>
 
