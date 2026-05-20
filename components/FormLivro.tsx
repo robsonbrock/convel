@@ -216,30 +216,58 @@ export function FormLivro({ mode, livro, onSubmit }: FormLivroProps) {
             <Autocomplete
               multiple
               fullWidth
+              freeSolo
               options={autoresDisponiveis}
-              getOptionLabel={(option) => option.nome}
+              getOptionLabel={(option) => typeof option === 'string' ? option : option.nome}
               value={autoresSelecionados}
-              onChange={(_, newValue) => handleAutoresChange(newValue)}
+              onChange={async (_, newValue) => {
+                const processedValue = await Promise.all(
+                  newValue.map(async (item: any) => {
+                    if (typeof item === 'string') {
+                      // É um novo autor digitado
+                      const novoAutor = { id: '', nome: item };
+                      // Tentar criar o autor no banco
+                      try {
+                        const response = await fetch('/api/autores', {
+                          method: 'POST',
+                          headers: { 'Content-Type': 'application/json' },
+                          body: JSON.stringify({ nome: item }),
+                        });
+                        if (response.ok) {
+                          const data = await response.json();
+                          return data.autor || novoAutor;
+                        }
+                      } catch (error) {
+                        console.error('Erro ao criar autor:', error);
+                      }
+                      return novoAutor;
+                    }
+                    return item;
+                  })
+                );
+                handleAutoresChange(processedValue.filter((a: any) => a.nome));
+              }}
               filterSelectedOptions
               renderInput={(params) => (
                 <TextField
                   {...params}
                   label="Autores *"
-                  placeholder="Selecione autores"
+                  placeholder="Digite para buscar ou criar novo autor"
                   error={!!errors.autores}
-                  helperText={errors.autores}
+                  helperText={errors.autores || 'Digite um nome e pressione Enter para criar um novo autor'}
                 />
               )}
               renderTags={(value, getTagProps) =>
                 value.map((option, index) => (
                   <Chip
-                    label={option.nome}
+                    label={typeof option === 'string' ? option : option.nome}
                     {...getTagProps({ index })}
                     variant="outlined"
                     size="small"
                   />
                 ))
               }
+              noOptionsText="Nenhum autor encontrado. Digite para criar novo."
             />
           </Grid>
 
