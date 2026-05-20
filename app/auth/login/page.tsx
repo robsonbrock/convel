@@ -1,8 +1,17 @@
 'use client';
 
 import { useState } from 'react';
-import { Button } from '@/components/ui/Button';
-import { Card } from '@/components/ui/Card';
+import {
+  Container,
+  Box,
+  Card,
+  CardContent,
+  Typography,
+  Button,
+  Alert,
+  CircularProgress,
+  Avatar,
+} from '@mui/material';
 
 export default function LoginPage() {
   const [loading, setLoading] = useState(false);
@@ -34,42 +43,67 @@ export default function LoginPage() {
   }
 
   return (
-    <div className="min-h-screen bg-primary-99 flex items-center justify-center p-4">
-      <Card className="w-full max-w-md shadow-elevation-3">
-        <div className="text-center mb-8">
-          <div className="w-16 h-16 bg-primary-40 rounded-lg flex items-center justify-center mx-auto mb-4">
-            <span className="text-primary-99 text-2xl font-bold">C</span>
-          </div>
-          <h1 className="text-headline-md text-primary-10 font-semibold">ConVEL</h1>
-          <p className="text-body-md text-secondary-50 mt-2">
-            Sistema de Controle de Vendas e Empréstimos
-          </p>
-        </div>
+    <Box
+      display="flex"
+      justifyContent="center"
+      alignItems="center"
+      minHeight="100vh"
+      bgcolor="background.default"
+    >
+      <Container maxWidth="sm">
+        <Card elevation={3}>
+          <CardContent sx={{ textAlign: 'center', p: 4 }}>
+            <Avatar
+              sx={{
+                width: 64,
+                height: 64,
+                margin: '0 auto 16px',
+                bgcolor: 'primary.main',
+                fontSize: '32px',
+              }}
+            >
+              C
+            </Avatar>
 
-        <div className="space-y-4">
-          {error && (
-            <div className="bg-error-95 border-l-4 border-error-40 rounded-md p-4">
-              <p className="text-body-sm text-error-40 font-medium">{error}</p>
-            </div>
-          )}
+            <Typography variant="h4" sx={{ mb: 1, fontWeight: 'bold' }}>
+              ConVEL
+            </Typography>
+            <Typography variant="body2" color="textSecondary" sx={{ mb: 3 }}>
+              Sistema de Controle de Vendas e Empréstimos
+            </Typography>
 
-          <Button
-            onClick={handleGoogleLogin}
-            variant="filled"
-            size="lg"
-            className="w-full"
-            disabled={loading}
-          >
-            {loading ? 'Conectando...' : '🔐 Entrar com Google'}
-          </Button>
-        </div>
+            {error && (
+              <Alert severity="error" sx={{ mb: 2 }}>
+                {error}
+              </Alert>
+            )}
 
-        <div className="mt-6 pt-4 border-t border-secondary-90">
-          <p className="text-center text-body-sm text-secondary-60">
-            Acesso restrito para usuários autorizados
-          </p>
-        </div>
-      </Card>
-    </div>
+            <Button
+              variant="contained"
+              fullWidth
+              size="large"
+              onClick={handleGoogleLogin}
+              disabled={loading}
+              sx={{ mb: 2 }}
+            >
+              {loading ? (
+                <Box display="flex" alignItems="center" gap={1}>
+                  <CircularProgress size={24} color="inherit" />
+                  Conectando...
+                </Box>
+              ) : (
+                '🔐 Entrar com Google'
+              )}
+            </Button>
+
+            <Box sx={{ mt: 3, pt: 2, borderTop: '1px solid', borderColor: 'divider' }}>
+              <Typography variant="caption" color="textSecondary" display="block">
+                Acesso restrito para usuários autorizados
+              </Typography>
+            </Box>
+          </CardContent>
+        </Card>
+      </Container>
+    </Box>
   );
 }

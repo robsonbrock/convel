@@ -6,9 +6,9 @@ export async function POST(request: NextRequest) {
     const supabase = getSupabase();
 
     const appUrl = process.env.NEXT_PUBLIC_APP_URL ||
-      (request.headers.get('x-forwarded-proto') ?
+      (request.headers.get('x-forwarded-proto') && request.headers.get('host') ?
         `${request.headers.get('x-forwarded-proto')}://${request.headers.get('host')}` :
-        `https://convel.vercel.app`);
+        `http://localhost:3000`);
 
     console.log('[Google Auth] Starting OAuth flow:', {
       appUrl,
