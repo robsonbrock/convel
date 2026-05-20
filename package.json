@@ -7,7 +7,8 @@
     "build": "next build",
     "start": "next start",
     "lint": "eslint",
-    "seed": "node scripts/seed-categorias-api.js"
+    "seed": "node scripts/seed-categorias-api.js",
+    "seed:livros": "node scripts/seed-livros.js"
   },
   "dependencies": {
     "@emotion/react": "^11.11.0",

@@ -97,7 +97,7 @@ export async function POST(request: NextRequest) {
     const body = await request.json();
     const supabase = getSupabase();
 
-    const { titulo, editora, categoria_id, ano, isbn, quantidade_emprestimo, quantidade_venda, preco_venda, autores } = body;
+    const { titulo, editora, categoria_id, ano, isbn, quantidade_emprestimo, quantidade_venda, preco_venda, detalhes, autores } = body;
 
     // Validar campos obrigatórios
     if (!titulo || !editora || !categoria_id || !autores || autores.length === 0) {
@@ -120,6 +120,7 @@ export async function POST(request: NextRequest) {
           quantidade_emprestimo: quantidade_emprestimo || 0,
           quantidade_venda: quantidade_venda || 0,
           preco_venda: preco_venda || null,
+          detalhes: detalhes || null,
         },
       ])
       .select()

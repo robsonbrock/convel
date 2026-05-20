@@ -47,6 +47,10 @@ export const livroCreateSchema = z.object({
     .optional()
     .nullable(),
 
+  detalhes: z.string()
+    .optional()
+    .nullable(),
+
   autores: z.array(autorSchema)
     .min(1, 'Pelo menos um autor é obrigatório'),
 });

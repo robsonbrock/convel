@@ -44,6 +44,7 @@ export function FormLivro({ mode, livro, onSubmit }: FormLivroProps) {
     quantidade_emprestimo: livro?.quantidade_emprestimo || 0,
     quantidade_venda: livro?.quantidade_venda || 0,
     preco_venda: livro?.preco_venda || '',
+    detalhes: livro?.detalhes || '',
   });
 
   const [autoresSelecionados, setAutoresSelecionados] = useState<Autor[]>(livro?.autores || []);
@@ -145,6 +146,7 @@ export function FormLivro({ mode, livro, onSubmit }: FormLivroProps) {
       quantidade_emprestimo: parseInt(String(formData.quantidade_emprestimo)) || 0,
       quantidade_venda: parseInt(String(formData.quantidade_venda)) || 0,
       preco_venda: formData.preco_venda ? parseFloat(String(formData.preco_venda)) : undefined,
+      detalhes: formData.detalhes || undefined,
       autores: autoresSelecionados,
     };
 
@@ -412,6 +414,21 @@ export function FormLivro({ mode, livro, onSubmit }: FormLivroProps) {
               InputProps={{
                 startAdornment: <InputAdornment position="start">R$</InputAdornment>,
               }}
+            />
+          </Grid>
+
+          {/* Detalhes */}
+          <Grid item xs={12}>
+            <TextField
+              fullWidth
+              multiline
+              rows={4}
+              label="Detalhes"
+              value={formData.detalhes}
+              onChange={(e) => handleInputChange('detalhes', e.target.value)}
+              error={!!errors.detalhes}
+              helperText={errors.detalhes}
+              placeholder="Descrição detalhada do livro, sinopse, notas, etc."
             />
           </Grid>
 
