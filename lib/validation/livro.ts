@@ -32,6 +32,11 @@ export const livroCreateSchema = z.object({
     .optional()
     .nullable(),
 
+  codigo: z.string()
+    .max(100, 'Código não pode exceder 100 caracteres')
+    .optional()
+    .nullable(),
+
   quantidade_emprestimo: z.number()
     .int('Quantidade deve ser um número inteiro')
     .min(0, 'Quantidade não pode ser negativa')

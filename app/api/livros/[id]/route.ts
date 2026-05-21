@@ -54,7 +54,7 @@ export async function PUT(request: NextRequest, { params }: { params: Promise<{ 
     const body = await request.json();
     const supabase = getSupabase();
 
-    const { titulo, editora, categoria_id, ano, isbn, quantidade_emprestimo, quantidade_venda, preco_venda, detalhes, autores } = body;
+    const { titulo, editora, categoria_id, ano, isbn, codigo, quantidade_emprestimo, quantidade_venda, preco_venda, detalhes, autores } = body;
 
     // Atualizar livro
     const { data: livro, error: livroError } = await supabase
@@ -65,6 +65,7 @@ export async function PUT(request: NextRequest, { params }: { params: Promise<{ 
         categoria_id,
         ano: ano || null,
         isbn: isbn || null,
+        codigo: codigo || null,
         quantidade_emprestimo: quantidade_emprestimo || 0,
         quantidade_venda: quantidade_venda || 0,
         preco_venda: preco_venda || null,

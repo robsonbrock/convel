@@ -41,6 +41,7 @@ export function FormLivro({ mode, livro, onSubmit }: FormLivroProps) {
     categoria_id: livro?.categoria_id || '',
     ano: livro?.ano || undefined,
     isbn: livro?.isbn || '',
+    codigo: livro?.codigo || '',
     quantidade_emprestimo: livro?.quantidade_emprestimo || 0,
     quantidade_venda: livro?.quantidade_venda || 0,
     preco_venda: livro?.preco_venda || '',
@@ -368,6 +369,19 @@ export function FormLivro({ mode, livro, onSubmit }: FormLivroProps) {
               error={!!errors.isbn}
               helperText={errors.isbn}
               placeholder="ISBN do livro"
+            />
+          </Grid>
+
+          {/* Código */}
+          <Grid item xs={12} sm={6}>
+            <TextField
+              fullWidth
+              label="Código"
+              value={formData.codigo}
+              onChange={(e) => handleInputChange('codigo', e.target.value)}
+              error={!!errors.codigo}
+              helperText={errors.codigo}
+              placeholder="Código de barras ou identificador (ex: 9788580333428)"
             />
           </Grid>
 

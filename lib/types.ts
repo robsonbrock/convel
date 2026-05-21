@@ -40,6 +40,7 @@ export interface Livro {
   editora?: string;
   ano?: number;
   isbn?: string;
+  codigo?: string;
   quantidade_venda: number;
   quantidade_emprestimo: number;
   preco_venda?: number;
