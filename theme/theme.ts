@@ -36,7 +36,7 @@ const lightTheme = createTheme({
       dark: '#0891b2',
     },
     background: {
-      default: '#f8fafc',
+      default: '#f0ebf8',
       paper: '#ffffff',
     },
     text: {
@@ -45,7 +45,7 @@ const lightTheme = createTheme({
     },
     divider: '#e2e8f0',
     action: {
-      hover: '#f1f5f9',
+      hover: '#e9dff5',
       selected: '#ede9fe',
     },
   },
@@ -123,10 +123,11 @@ const lightTheme = createTheme({
         root: {
           borderRadius: 12,
           border: 'none',
-          boxShadow: '0 1px 3px rgba(0, 0, 0, 0.1)',
+          backgroundColor: '#faf6ff',
+          boxShadow: '0 1px 3px rgba(0, 0, 0, 0.05)',
           transition: 'all 200ms ease',
           '&:hover': {
-            boxShadow: '0 8px 24px rgba(0, 0, 0, 0.12)',
+            boxShadow: '0 8px 24px rgba(0, 0, 0, 0.08)',
           },
         },
       },
