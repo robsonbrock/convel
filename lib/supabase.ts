@@ -1,22 +1,45 @@
 import { createClient } from '@supabase/supabase-js';
 
-export async function getSupabaseAsync() {
-  const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
-  const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
+const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
+const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
 
-  if (!supabaseUrl || !supabaseAnonKey) {
-    throw new Error(
-      'Supabase não configurado. Adicione NEXT_PUBLIC_SUPABASE_URL e NEXT_PUBLIC_SUPABASE_ANON_KEY'
-    );
+if (!supabaseUrl || !supabaseAnonKey) {
+  throw new Error(
+    'Supabase não configurado. Adicione NEXT_PUBLIC_SUPABASE_URL e NEXT_PUBLIC_SUPABASE_ANON_KEY'
+  );
+}
+
+let supabaseClient: any = null;
+
+export function getSupabase() {
+  if (typeof window === 'undefined') {
+    // Server-side: create new instance for each request to avoid state pollution
+    return createClient(supabaseUrl, supabaseAnonKey, {
+      auth: {
+        persistSession: false,
+      },
+    });
   }
 
+  // Client-side: use singleton
+  if (!supabaseClient) {
+    supabaseClient = createClient(supabaseUrl, supabaseAnonKey, {
+      auth: {
+        persistSession: true,
+        storageKey: 'sb-auth-token',
+      },
+    });
+  }
+  return supabaseClient;
+}
+
+export async function getSupabaseAsync() {
   const { cookies } = await import('next/headers');
   const cookieStore = await cookies();
 
-  const supabase = createClient(supabaseUrl, supabaseAnonKey, {
+  return createClient(supabaseUrl, supabaseAnonKey, {
     auth: {
-      persistSession: true,
-      storageKey: 'sb-auth-token',
+      persistSession: false,
     },
     global: {
       headers: {
@@ -24,25 +47,4 @@ export async function getSupabaseAsync() {
       },
     },
   });
-
-  return supabase;
-}
-
-// Keep the old sync version for client-side usage
-let supabase: any = null;
-
-export function getSupabase() {
-  if (supabase) return supabase;
-
-  const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
-  const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
-
-  if (!supabaseUrl || !supabaseAnonKey) {
-    throw new Error(
-      'Supabase não configurado. Adicione NEXT_PUBLIC_SUPABASE_URL e NEXT_PUBLIC_SUPABASE_ANON_KEY'
-    );
-  }
-
-  supabase = createClient(supabaseUrl, supabaseAnonKey);
-  return supabase;
 }

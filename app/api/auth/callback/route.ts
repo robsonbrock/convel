@@ -5,12 +5,14 @@ export async function GET(request: NextRequest) {
   const error = searchParams.get('error');
 
   if (error) {
+    console.error('[Auth Callback] OAuth error:', error);
     return NextResponse.redirect(
       new URL(`/auth/login?error=${error}`, request.url)
     );
   }
 
-  // Redirect to dashboard - Supabase handles session via its own cookies
+  console.log('[Auth Callback] Redirecting to dashboard');
+  // Redirect to dashboard and let the Supabase client handle session detection
   return NextResponse.redirect(
     new URL('/dashboard', request.url)
   );

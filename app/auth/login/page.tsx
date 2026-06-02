@@ -29,6 +29,7 @@ export default function LoginPage() {
       if (!response.ok) {
         const data = await response.json();
         setError(data.message || 'Falha ao conectar com Google');
+        setLoading(false);
         return;
       }
 
@@ -37,7 +38,6 @@ export default function LoginPage() {
     } catch (err) {
       setError('Erro ao conectar com o servidor');
       console.error(err);
-    } finally {
       setLoading(false);
     }
   }

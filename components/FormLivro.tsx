@@ -49,6 +49,7 @@ export function FormLivro({ mode, livro, onSubmit }: FormLivroProps) {
   });
 
   const [autoresSelecionados, setAutoresSelecionados] = useState<Autor[]>(livro?.autores || []);
+  const [autoresNovos, setAutoresNovos] = useState<string[]>([]);
   const [errors, setErrors] = useState<Record<string, string>>({});
 
   useEffect(() => {
@@ -93,8 +94,12 @@ export function FormLivro({ mode, livro, onSubmit }: FormLivroProps) {
     }
   };
 
-  const handleAutoresChange = (newValue: Autor[]) => {
-    setAutoresSelecionados(newValue);
+  const handleAutoresChange = (newValue: (Autor | string)[]) => {
+    const novos = newValue.filter((v): v is string => typeof v === 'string').map(v => v.trim()).filter(v => v !== '');
+    const existentes = newValue.filter((v): v is Autor => typeof v === 'object');
+
+    setAutoresSelecionados(existentes);
+    setAutoresNovos(novos);
     if (errors.autores) {
       setErrors((prev) => ({
         ...prev,
@@ -142,12 +147,16 @@ export function FormLivro({ mode, livro, onSubmit }: FormLivroProps) {
     const newErrors: Record<string, string> = {};
 
     const dataToValidate = {
-      ...formData,
+      titulo: formData.titulo || undefined,
+      editora: formData.editora ? formData.editora : undefined,
+      categoria_id: formData.categoria_id ? formData.categoria_id : undefined,
       ano: formData.ano ? parseInt(String(formData.ano)) : undefined,
+      isbn: formData.isbn ? formData.isbn : undefined,
+      codigo: formData.codigo ? formData.codigo : undefined,
       quantidade_emprestimo: parseInt(String(formData.quantidade_emprestimo)) || 0,
       quantidade_venda: parseInt(String(formData.quantidade_venda)) || 0,
       preco_venda: formData.preco_venda ? parseFloat(String(formData.preco_venda)) : undefined,
-      detalhes: formData.detalhes || undefined,
+      detalhes: formData.detalhes ? formData.detalhes : undefined,
       autores: autoresSelecionados,
     };
 
@@ -155,14 +164,18 @@ export function FormLivro({ mode, livro, onSubmit }: FormLivroProps) {
 
     try {
       schema.parse(dataToValidate);
+      console.log('✅ Schema validado com sucesso');
       return true;
     } catch (error: any) {
-      if (error.errors) {
-        error.errors.forEach((err: any) => {
+      console.error('🔴 Erros na validação Zod:');
+      if (error.issues) {
+        error.issues.forEach((err: any, idx: number) => {
           const field = err.path[0];
+          console.error(`   ${idx + 1}. Campo "${field}": ${err.message}`);
           newErrors[field] = err.message;
         });
       }
+      console.log('📋 newErrors:', newErrors);
       setErrors(newErrors);
       return false;
     }
@@ -170,31 +183,65 @@ export function FormLivro({ mode, livro, onSubmit }: FormLivroProps) {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    console.log('🔵 handleSubmit chamado', { autoresSelecionados, autoresNovos, titulo: formData.titulo });
 
     if (!(await validateForm())) {
+      console.log('❌ Validação falhou', errors);
       return;
     }
 
+    console.log('✅ Validação passou, iniciando envio...');
     setLoading(true);
 
     try {
+      // Criar autores novos (que foram guardados em memória)
+      let autoresFinais = [...autoresSelecionados];
+      if (autoresNovos.length > 0) {
+        const autorsCriados = await Promise.all(
+          autoresNovos.map(async (nome) => {
+            try {
+              const response = await fetch('/api/autores', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ nome }),
+              });
+              if (response.ok) {
+                const data = await response.json();
+                return data.autor;
+              }
+            } catch (error) {
+              console.error(`Erro ao criar autor "${nome}":`, error);
+            }
+            return null;
+          })
+        );
+        // Filtrar nulos (autores que falharam) e adicionar aos finais
+        const autorsCriadosValidos = autorsCriados.filter((a) => a !== null);
+        autoresFinais = [...autoresSelecionados, ...autorsCriadosValidos];
+        setAutoresNovos([]);
+      }
+
       const dataToSend = {
         ...formData,
         ano: formData.ano ? parseInt(String(formData.ano)) : null,
         quantidade_emprestimo: parseInt(String(formData.quantidade_emprestimo)) || 0,
         quantidade_venda: parseInt(String(formData.quantidade_venda)) || 0,
         preco_venda: formData.preco_venda ? parseFloat(String(formData.preco_venda)) : null,
-        autores: autoresSelecionados.map((a) => ({ id: a.id, nome: a.nome })),
+        autores: autoresFinais.map((a) => ({ id: a.id, nome: a.nome })),
       };
 
       const url = mode === 'create' ? '/api/livros' : `/api/livros/${livro?.id}`;
       const method = mode === 'create' ? 'POST' : 'PUT';
+
+      console.log('📤 Enviando para:', url, { method, data: dataToSend });
 
       const response = await fetch(url, {
         method,
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(dataToSend),
       });
+
+      console.log('📥 Resposta recebida:', response.status);
 
       if (!response.ok) {
         const errorData = await response.json();
@@ -253,38 +300,15 @@ export function FormLivro({ mode, livro, onSubmit }: FormLivroProps) {
           {/* Autores */}
           <Grid item xs={12}>
             <Autocomplete
+              suppressHydrationWarning
               multiple
               fullWidth
               freeSolo
               options={autoresDisponiveis}
               getOptionLabel={(option) => typeof option === 'string' ? option : option.nome}
-              value={autoresSelecionados}
-              onChange={async (_, newValue) => {
-                const processedValue = await Promise.all(
-                  newValue.map(async (item: any) => {
-                    if (typeof item === 'string') {
-                      // É um novo autor digitado
-                      const novoAutor = { id: '', nome: item };
-                      // Tentar criar o autor no banco
-                      try {
-                        const response = await fetch('/api/autores', {
-                          method: 'POST',
-                          headers: { 'Content-Type': 'application/json' },
-                          body: JSON.stringify({ nome: item }),
-                        });
-                        if (response.ok) {
-                          const data = await response.json();
-                          return data.autor || novoAutor;
-                        }
-                      } catch (error) {
-                        console.error('Erro ao criar autor:', error);
-                      }
-                      return novoAutor;
-                    }
-                    return item;
-                  })
-                );
-                handleAutoresChange(processedValue.filter((a: any) => a.nome));
+              value={[...autoresSelecionados, ...autoresNovos]}
+              onChange={(_, newValue) => {
+                handleAutoresChange(newValue || []);
               }}
               filterSelectedOptions
               renderInput={(params) => (
@@ -297,14 +321,18 @@ export function FormLivro({ mode, livro, onSubmit }: FormLivroProps) {
                 />
               )}
               renderTags={(value, getTagProps) =>
-                value.map((option, index) => (
-                  <Chip
-                    label={typeof option === 'string' ? option : option.nome}
-                    {...getTagProps({ index })}
-                    variant="outlined"
-                    size="small"
-                  />
-                ))
+                value.map((option, index) => {
+                  const { key, ...chipProps } = getTagProps({ index });
+                  return (
+                    <Chip
+                      key={key}
+                      label={typeof option === 'string' ? option : option.nome}
+                      {...chipProps}
+                      variant="outlined"
+                      size="small"
+                    />
+                  );
+                })
               }
               noOptionsText="Nenhum autor encontrado. Digite para criar novo."
             />
@@ -314,7 +342,7 @@ export function FormLivro({ mode, livro, onSubmit }: FormLivroProps) {
           <Grid item xs={12} sm={6}>
             <TextField
               fullWidth
-              label="Editora *"
+              label="Editora"
               value={formData.editora}
               onChange={(e) => handleInputChange('editora', e.target.value)}
               error={!!errors.editora}
@@ -335,7 +363,7 @@ export function FormLivro({ mode, livro, onSubmit }: FormLivroProps) {
               renderInput={(params) => (
                 <TextField
                   {...params}
-                  label="Categoria *"
+                  label="Categoria"
                   placeholder="Digite para buscar ou criar nova categoria"
                   error={!!errors.categoria_id}
                   helperText={errors.categoria_id || 'Digite um nome e pressione Enter para criar uma nova categoria'}
@@ -404,7 +432,7 @@ export function FormLivro({ mode, livro, onSubmit }: FormLivroProps) {
             <TextField
               fullWidth
               type="number"
-              label="Quantidade em Estoque"
+              label="Quantidade em Estoque (venda)"
               value={formData.quantidade_venda}
               onChange={(e) => handleInputChange('quantidade_venda', e.target.value)}
               error={!!errors.quantidade_venda}
@@ -460,7 +488,7 @@ export function FormLivro({ mode, livro, onSubmit }: FormLivroProps) {
             <Button
               variant="contained"
               color="primary"
-              onClick={handleSubmit}
+              type="submit"
               disabled={loading}
               sx={{ minWidth: 120 }}
             >

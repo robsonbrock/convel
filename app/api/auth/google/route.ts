@@ -1,25 +1,20 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { getSupabase } from '@/lib/supabase';
+import { getSupabaseAsync } from '@/lib/supabase';
 
 export async function POST(request: NextRequest) {
   try {
-    const supabase = getSupabase();
+    const supabase = await getSupabaseAsync();
 
-    const appUrl = process.env.NEXT_PUBLIC_APP_URL ||
-      (request.headers.get('x-forwarded-proto') && request.headers.get('host') ?
-        `${request.headers.get('x-forwarded-proto')}://${request.headers.get('host')}` :
-        `http://localhost:3000`);
+    const appUrl = process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3000';
+    const redirectTo = `${appUrl}/api/auth/callback`;
 
-    console.log('[Google Auth] Starting OAuth flow:', {
-      appUrl,
-      redirectTo: `${appUrl}/api/auth/callback`,
-      env: process.env.NEXT_PUBLIC_APP_URL,
-    });
+    console.log('[Google Auth] Starting OAuth flow:', { appUrl, redirectTo });
 
     const { data, error } = await supabase.auth.signInWithOAuth({
       provider: 'google',
       options: {
-        redirectTo: `${appUrl}/api/auth/callback`,
+        redirectTo,
+        skipBrowserWarning: true,
       },
     });
 

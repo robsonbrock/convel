@@ -2,13 +2,11 @@
 
 import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
-import { Box, Container } from '@mui/material';
-import { Header } from '@/components/Header';
-import { Sidebar } from '@/components/Sidebar';
+import { Box } from '@mui/material';
 import { UsuarioSession } from '@/lib/auth';
 import { createClient } from '@supabase/supabase-js';
 
-export default function DashboardLayout({
+export default function AdminUsuariosLayout({
   children,
 }: {
   children: React.ReactNode;
@@ -16,10 +14,9 @@ export default function DashboardLayout({
   const router = useRouter();
   const [usuario, setUsuario] = useState<UsuarioSession | null>(null);
   const [loading, setLoading] = useState(true);
-  const [drawerOpen, setDrawerOpen] = useState(false);
 
   useEffect(() => {
-    async function checkAuth() {
+    async function checkPermission() {
       try {
         const supabase = createClient(
           process.env.NEXT_PUBLIC_SUPABASE_URL!,
@@ -29,31 +26,28 @@ export default function DashboardLayout({
         const { data: { session } } = await supabase.auth.getSession();
 
         if (!session?.user) {
-          console.log('[Dashboard] No session found, redirecting to login');
           router.push('/auth/login');
           return;
         }
 
-        console.log('[Dashboard] Session found:', session.user.email);
-
-        // Create a user object from the session
+        // For now, allow all authenticated users (role check can be added later from DB)
         const usuarioData: UsuarioSession = {
           id: session.user.id,
           nome: session.user.user_metadata?.full_name || session.user.email?.split('@')[0] || 'Usuário',
           email: session.user.email || '',
-          role: 'vendedor', // Default role - will be updated from DB if needed
+          role: 'super_admin', // TODO: Get from database
         };
 
         setUsuario(usuarioData);
       } catch (error) {
-        console.error('Error checking auth:', error);
+        console.error('Error:', error);
         router.push('/auth/login');
       } finally {
         setLoading(false);
       }
     }
 
-    checkAuth();
+    checkPermission();
   }, [router]);
 
   if (loading) {
@@ -64,43 +58,14 @@ export default function DashboardLayout({
         justifyContent="center"
         minHeight="100vh"
       >
-        Carregando...
+        Verificando permissões...
       </Box>
     );
   }
 
-  if (!usuario) {
+  if (!usuario || usuario.role !== 'super_admin') {
     return null;
   }
 
-  return (
-    <Box display="flex" flexDirection="column" minHeight="100vh">
-      <Header
-        usuario={usuario}
-        onMenuToggle={() => setDrawerOpen(!drawerOpen)}
-      />
-
-      <Box display="flex" flex={1}>
-        <Sidebar
-          usuario={usuario}
-          open={drawerOpen}
-          onClose={() => setDrawerOpen(false)}
-        />
-
-        <Box
-          component="main"
-          sx={{
-            flexGrow: 1,
-            p: 3,
-            ml: { xs: 0, md: '250px' },
-            mt: { xs: '56px', sm: '64px' },
-          }}
-        >
-          <Container maxWidth="lg">
-            {children}
-          </Container>
-        </Box>
-      </Box>
-    </Box>
-  );
+  return children;
 }
