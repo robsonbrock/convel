@@ -14,7 +14,6 @@ export async function POST(request: NextRequest) {
       provider: 'google',
       options: {
         redirectTo,
-        skipBrowserWarning: true,
       },
     });
 

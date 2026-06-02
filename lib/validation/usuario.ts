@@ -19,9 +19,8 @@ export const usuarioSchema = z.object({
     .min(8, 'Senha deve ter no mínimo 8 caracteres')
     .max(255, 'Senha deve ter no máximo 255 caracteres'),
   role: z
-    .enum(['super_admin', 'admin', 'vendedor'], {
-      errorMap: () => ({ message: 'Role inválido' }),
-    }),
+    .enum(['super_admin', 'admin', 'vendedor'])
+    .default('vendedor'),
   telefone: z
     .string()
     .max(20, 'Telefone deve ter no máximo 20 caracteres')
