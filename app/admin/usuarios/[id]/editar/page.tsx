@@ -139,7 +139,7 @@ export default function EditarUsuarioPage() {
     } catch (error) {
       if (error instanceof ZodError) {
         const newErrors: FormErrors = {};
-        error.errors.forEach((err) => {
+        error.issues.forEach((err) => {
           const fieldName = err.path[0] as string;
           newErrors[fieldName] = err.message;
         });
