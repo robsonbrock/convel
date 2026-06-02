@@ -36,12 +36,20 @@ export default function DashboardLayout({
 
         console.log('[Dashboard] Session found:', session.user.email);
 
-        // Create a user object from the session
+        // Get user data from database
+        const { data: usuarioDB } = await supabase
+          .from('usuarios')
+          .select('id, cpf, nome, email, role')
+          .eq('id', session.user.id)
+          .single();
+
+        // Create a user object from the session/database
         const usuarioData: UsuarioSession = {
           id: session.user.id,
-          nome: session.user.user_metadata?.full_name || session.user.email?.split('@')[0] || 'Usuário',
+          cpf: usuarioDB?.cpf || '',
+          nome: usuarioDB?.nome || session.user.user_metadata?.full_name || session.user.email?.split('@')[0] || 'Usuário',
           email: session.user.email || '',
-          role: 'vendedor', // Default role - will be updated from DB if needed
+          role: (usuarioDB?.role as any) || 'vendedor',
         };
 
         setUsuario(usuarioData);

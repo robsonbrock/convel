@@ -14,7 +14,7 @@ let supabaseClient: any = null;
 export function getSupabase() {
   if (typeof window === 'undefined') {
     // Server-side: create new instance for each request to avoid state pollution
-    return createClient(supabaseUrl, supabaseAnonKey, {
+    return createClient(supabaseUrl!, supabaseAnonKey!, {
       auth: {
         persistSession: false,
       },
@@ -23,7 +23,7 @@ export function getSupabase() {
 
   // Client-side: use singleton
   if (!supabaseClient) {
-    supabaseClient = createClient(supabaseUrl, supabaseAnonKey, {
+    supabaseClient = createClient(supabaseUrl!, supabaseAnonKey!, {
       auth: {
         persistSession: true,
         storageKey: 'sb-auth-token',
@@ -37,7 +37,7 @@ export async function getSupabaseAsync() {
   const { cookies } = await import('next/headers');
   const cookieStore = await cookies();
 
-  return createClient(supabaseUrl, supabaseAnonKey, {
+  return createClient(supabaseUrl!, supabaseAnonKey!, {
     auth: {
       persistSession: false,
     },

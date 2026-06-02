@@ -30,12 +30,24 @@ export default function AdminUsuariosLayout({
           return;
         }
 
-        // For now, allow all authenticated users (role check can be added later from DB)
+        // Get user role from database
+        const { data: usuarioDB, error } = await supabase
+          .from('usuarios')
+          .select('id, nome, email, role, cpf')
+          .eq('id', session.user.id)
+          .single();
+
+        if (error || !usuarioDB) {
+          router.push('/auth/login');
+          return;
+        }
+
         const usuarioData: UsuarioSession = {
-          id: session.user.id,
-          nome: session.user.user_metadata?.full_name || session.user.email?.split('@')[0] || 'Usuário',
-          email: session.user.email || '',
-          role: 'super_admin', // TODO: Get from database
+          id: usuarioDB.id,
+          cpf: usuarioDB.cpf,
+          nome: usuarioDB.nome,
+          email: usuarioDB.email,
+          role: usuarioDB.role,
         };
 
         setUsuario(usuarioData);

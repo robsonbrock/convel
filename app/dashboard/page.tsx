@@ -24,11 +24,19 @@ export default function DashboardPage() {
 
         const { data: { session } } = await supabase.auth.getSession();
         if (session?.user) {
+          // Get user data from database
+          const { data: usuarioDB } = await supabase
+            .from('usuarios')
+            .select('id, cpf, nome, email, role')
+            .eq('id', session.user.id)
+            .single();
+
           const usuarioData: UsuarioSession = {
             id: session.user.id,
-            nome: session.user.user_metadata?.full_name || session.user.email?.split('@')[0] || 'Usuário',
+            cpf: usuarioDB?.cpf || '',
+            nome: usuarioDB?.nome || session.user.user_metadata?.full_name || session.user.email?.split('@')[0] || 'Usuário',
             email: session.user.email || '',
-            role: 'vendedor',
+            role: (usuarioDB?.role as any) || 'vendedor',
           };
           setUsuario(usuarioData);
         }
