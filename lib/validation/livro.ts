@@ -12,13 +12,9 @@ export const livroCreateSchema = z.object({
     .min(3, 'Título deve ter no mínimo 3 caracteres')
     .max(255, 'Título não pode exceder 255 caracteres'),
 
-  editora: z.string()
-    .min(3, 'Editora deve ter no mínimo 3 caracteres')
-    .max(255, 'Editora não pode exceder 255 caracteres'),
+  editora: z.string().max(255).optional().nullable(),
 
-  categoria_id: z.string()
-    .uuid('Categoria inválida')
-    .min(1, 'Categoria é obrigatória'),
+  categoria_id: z.string().uuid().optional().nullable(),
 
   ano: z.number()
     .int('Ano deve ser um número inteiro')
@@ -27,10 +23,9 @@ export const livroCreateSchema = z.object({
     .optional()
     .nullable(),
 
-  isbn: z.string()
-    .regex(/^(?:ISBN(?:-1[03])?:? )?(?=[0-9X]{10}$|(?:(?=(?:[0-9]+[- ]){3})[0-9X]{13}$|97[89][0-9]{10}$|(?=(?:[0-9]+[- ]){4})[0-9]{17}$|(?:97[89][- ]?[0-9]{10}[- ]?[0-9]{6}$)))/, 'ISBN inválido')
-    .optional()
-    .nullable(),
+  isbn: z.string().max(20).optional().nullable(),
+
+  codigo: z.string().max(100).optional().nullable(),
 
   quantidade_emprestimo: z.number()
     .int('Quantidade deve ser um número inteiro')
@@ -44,6 +39,10 @@ export const livroCreateSchema = z.object({
 
   preco_venda: z.number()
     .positive('Preço deve ser positivo')
+    .optional()
+    .nullable(),
+
+  detalhes: z.string()
     .optional()
     .nullable(),
 

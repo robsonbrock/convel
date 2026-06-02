@@ -14,6 +14,7 @@ import {
   CircularProgress,
   Typography,
   Paper,
+  useTheme,
 } from '@mui/material';
 import EditIcon from '@mui/icons-material/Edit';
 import DeleteIcon from '@mui/icons-material/Delete';
@@ -58,6 +59,13 @@ export function DataTable<T extends { id: string }>({
   showLoanAction = true,
   showSaleAction = true,
 }: DataTableProps<T>) {
+  const theme = useTheme();
+  const isDark = theme.palette.mode === 'dark';
+
+  const headerBg = isDark ? '#1f2937' : '#ffffff';
+  const headerText = isDark ? '#f1f5f9' : '#1a1a1a';
+  const headerBorder = isDark ? '#374151' : '#4f46e5';
+
   const [searchTerm, setSearchTerm] = useState('');
   const [sortConfig, setSortConfig] = useState<{ columnId: string; direction: 'asc' | 'desc' } | null>(null);
   const [page, setPage] = useState(0);
@@ -107,7 +115,7 @@ export function DataTable<T extends { id: string }>({
       </Box>
 
       {/* Tabela */}
-      <TableContainer component={Paper} sx={{ borderRadius: 2, boxShadow: 'none', border: '1px solid #e0e0e0' }}>
+      <TableContainer component={Paper} sx={{ borderRadius: 2, boxShadow: 'none' }}>
         {loading ? (
           <Box sx={{ display: 'flex', justifyContent: 'center', alignItems: 'center', minHeight: 300 }}>
             <CircularProgress />
@@ -119,16 +127,19 @@ export function DataTable<T extends { id: string }>({
         ) : (
           <Table sx={{ minWidth: 750 }}>
             <TableHead>
-              <TableRow sx={{ backgroundColor: '#f5f5f5' }}>
+              <TableRow>
                 {columns.map((column) => (
                   <TableCell
                     key={column.id}
                     sx={{
-                      fontWeight: 600,
+                      backgroundColor: `${headerBg} !important`,
+                      fontWeight: 700,
+                      color: headerText,
                       cursor: column.sortable ? 'pointer' : 'default',
                       userSelect: 'none',
                       width: column.width,
-                      '&:hover': column.sortable ? { backgroundColor: '#eeeeee' } : {},
+                      borderBottom: `3px solid ${headerBorder} !important`,
+                      '&:hover': column.sortable ? { backgroundColor: isDark ? '#2d3748 !important' : '#f5f5f5 !important' } : {},
                     }}
                     onClick={() => column.sortable && handleSort(column.id)}
                   >
@@ -140,7 +151,7 @@ export function DataTable<T extends { id: string }>({
                     )}
                   </TableCell>
                 ))}
-                {showActions && <TableCell align="right" sx={{ fontWeight: 600 }}>Ações</TableCell>}
+                {showActions && <TableCell align="right" sx={{ backgroundColor: `${headerBg} !important`, fontWeight: 700, color: headerText, borderBottom: `3px solid ${headerBorder} !important` }}>Ações</TableCell>}
               </TableRow>
             </TableHead>
             <TableBody>
@@ -148,7 +159,10 @@ export function DataTable<T extends { id: string }>({
                 <TableRow
                   key={row.id}
                   sx={{
-                    '&:hover': { backgroundColor: '#fafafa' },
+                    '&:hover': {
+                      backgroundColor: 'rgba(79, 70, 229, 0.08)',
+                      transition: 'background-color 150ms ease-in-out',
+                    },
                     borderBottom: '1px solid #e0e0e0',
                   }}
                 >

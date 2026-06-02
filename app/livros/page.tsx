@@ -48,11 +48,13 @@ export default function LivrosPage() {
       id: 'titulo',
       label: 'Título',
       sortable: true,
+      width: '35%',
       render: (value) => value,
     },
     {
       id: 'autores',
       label: 'Autores',
+      width: '25%',
       render: (value: any, row: any) => {
         const autores = row.autores || [];
         return autores.length > 0 ? autores.map((a: any) => a.nome).join(', ') : '-';
@@ -62,17 +64,20 @@ export default function LivrosPage() {
       id: 'editora',
       label: 'Editora',
       sortable: true,
+      width: '15%',
       render: (value) => value,
     },
     {
       id: 'ano',
       label: 'Ano',
       sortable: true,
+      width: '10%',
       render: (value) => value || '-',
     },
     {
       id: 'categoria_id',
       label: 'Categoria',
+      width: '15%',
       render: (value: any, row: any) => (row.categoria?.nome || '-'),
     },
   ];

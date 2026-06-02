@@ -1,0 +1,1 @@
+ALTER TABLE livros ADD COLUMN codigo VARCHAR(100);

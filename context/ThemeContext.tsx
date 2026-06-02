@@ -13,24 +13,15 @@ const ThemeContext = createContext<ThemeContextType | undefined>(undefined);
 
 export function ThemeProvider({ children }: { children: ReactNode }) {
   const [isDark, setIsDark] = useState(false);
-  const [mounted, setMounted] = useState(false);
 
   useEffect(() => {
-    // Carregar preferência salva ou usar light mode como padrão
     const saved = localStorage.getItem('theme-mode');
-    if (saved) {
-      setIsDark(saved === 'dark');
-    } else {
-      setIsDark(false); // Light mode como padrão
-    }
-    setMounted(true);
+    setIsDark(saved === 'dark');
   }, []);
 
   useEffect(() => {
-    if (mounted) {
-      localStorage.setItem('theme-mode', isDark ? 'dark' : 'light');
-    }
-  }, [isDark, mounted]);
+    localStorage.setItem('theme-mode', isDark ? 'dark' : 'light');
+  }, [isDark]);
 
   const toggleTheme = () => setIsDark(!isDark);
   const theme = isDark ? darkTheme : lightTheme;

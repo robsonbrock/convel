@@ -10,7 +10,7 @@ export function middleware(request: NextRequest) {
     return NextResponse.next();
   }
 
-  // Para /dashboard e rotas protegidas, o próprio componente fará a validação
+  // Just pass through - let the app handle auth
   return NextResponse.next();
 }
 

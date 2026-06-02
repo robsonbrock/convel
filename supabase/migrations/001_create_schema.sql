@@ -5,7 +5,7 @@ CREATE TABLE IF NOT EXISTS usuarios (
   nome VARCHAR(255) NOT NULL,
   email VARCHAR(255) UNIQUE NOT NULL,
   senha TEXT NOT NULL,
-  role VARCHAR(20) NOT NULL DEFAULT 'vendedor' CHECK (role IN ('super_admin', 'admin', 'vendedor')),
+  role VARCHAR(20) NOT NULL DEFAULT 'operador' CHECK (role IN ('super_admin', 'admin', 'operador')),
   telefone VARCHAR(20),
   endereco TEXT,
   created_at TIMESTAMP DEFAULT NOW(),

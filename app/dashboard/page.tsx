@@ -1,35 +1,62 @@
 'use client';
 
 import { Box, Typography, Grid } from '@mui/material';
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useCallback } from 'react';
+import { useRouter } from 'next/navigation';
 import { UsuarioSession } from '@/lib/auth';
 import { StatCard } from '@/components/StatCard';
 import { ActionCard } from '@/components/ActionCard';
 import { RecentActivity } from '@/components/RecentActivity';
+import { createClient } from '@supabase/supabase-js';
 
 export default function DashboardPage() {
+  const router = useRouter();
   const [usuario, setUsuario] = useState<UsuarioSession | null>(null);
+  const [totalLivros, setTotalLivros] = useState('0');
 
   useEffect(() => {
     async function fetchSession() {
       try {
-        const response = await fetch('/api/auth/me');
-        if (response.ok) {
-          const data = await response.json();
-          setUsuario(data.usuario);
+        const supabase = createClient(
+          process.env.NEXT_PUBLIC_SUPABASE_URL!,
+          process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
+        );
+
+        const { data: { session } } = await supabase.auth.getSession();
+        if (session?.user) {
+          const usuarioData: UsuarioSession = {
+            id: session.user.id,
+            nome: session.user.user_metadata?.full_name || session.user.email?.split('@')[0] || 'Usuário',
+            email: session.user.email || '',
+            role: 'vendedor',
+          };
+          setUsuario(usuarioData);
         }
       } catch (error) {
         console.error('Error:', error);
       }
     }
 
+    async function fetchTotalLivros() {
+      try {
+        const response = await fetch('/api/livros?limit=1');
+        if (response.ok) {
+          const data = await response.json();
+          setTotalLivros(String(data.total || 0));
+        }
+      } catch (error) {
+        console.error('Error fetching total livros:', error);
+      }
+    }
+
     fetchSession();
+    fetchTotalLivros();
   }, []);
 
   const stats = [
     {
       label: 'Total de Livros',
-      value: '0',
+      value: totalLivros,
       icon: 'menu_book',
       color: 'primary' as const,
     },
@@ -53,11 +80,28 @@ export default function DashboardPage() {
     },
   ];
 
+  const handleNovoLivro = useCallback(() => {
+    router.push('/livro/novo');
+  }, [router]);
+
+  const handleNovaVenda = useCallback(() => {
+    router.push('/venda');
+  }, [router]);
+
+  const handleNovoEmprestimo = useCallback(() => {
+    router.push('/emprestimo');
+  }, [router]);
+
+  const handleNovoUsuario = useCallback(() => {
+    // TODO: Implement when users page is ready
+    console.log('Novo Usuário clicked');
+  }, []);
+
   const actions = [
-    { title: 'Novo Livro', icon: 'add_circle', color: 'primary' as const },
-    { title: 'Nova Venda', icon: 'add_shopping_cart', color: 'success' as const },
-    { title: 'Novo Empréstimo', icon: 'library_add', color: 'info' as const },
-    { title: 'Novo Usuário', icon: 'person_add', color: 'secondary' as const },
+    { title: 'Novo Livro', icon: 'add_circle', color: 'primary' as const, onClick: handleNovoLivro },
+    { title: 'Nova Venda', icon: 'add_shopping_cart', color: 'success' as const, onClick: handleNovaVenda },
+    { title: 'Novo Empréstimo', icon: 'library_add', color: 'info' as const, onClick: handleNovoEmprestimo },
+    { title: 'Novo Usuário', icon: 'person_add', color: 'secondary' as const, onClick: handleNovoUsuario },
   ];
 
   return (
@@ -125,6 +169,7 @@ export default function DashboardPage() {
                 title={action.title}
                 icon={action.icon}
                 color={action.color}
+                onClick={action.onClick}
               />
             </Grid>
           ))}
