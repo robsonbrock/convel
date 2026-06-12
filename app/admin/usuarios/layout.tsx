@@ -4,7 +4,7 @@ import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { Box } from '@mui/material';
 import { UsuarioSession } from '@/lib/auth';
-import { createClient } from '@supabase/supabase-js';
+import { getSupabase } from '@/lib/supabase';
 
 export default function AdminUsuariosLayout({
   children,
@@ -18,10 +18,7 @@ export default function AdminUsuariosLayout({
   useEffect(() => {
     async function checkPermission() {
       try {
-        const supabase = createClient(
-          process.env.NEXT_PUBLIC_SUPABASE_URL!,
-          process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
-        );
+        const supabase = getSupabase();
 
         const { data: { session } } = await supabase.auth.getSession();
 
@@ -34,10 +31,12 @@ export default function AdminUsuariosLayout({
         const { data: usuarioDB, error } = await supabase
           .from('usuarios')
           .select('id, nome, email, role, cpf')
-          .eq('id', session.user.id)
+          .eq('email', session.user.email)
           .single();
 
         if (error || !usuarioDB) {
+          console.error('[AdminLayout] User not found, blocking access');
+          // NÃO setLoading(false) - deixa loading=true indefinidamente
           router.push('/auth/login');
           return;
         }

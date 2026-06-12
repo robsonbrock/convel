@@ -1,12 +1,12 @@
 'use client';
 
 import { useEffect, useState } from 'react';
-import { useRouter } from 'next/navigation';
+import { useRouter, redirect } from 'next/navigation';
 import { Box, Container } from '@mui/material';
 import { Header } from '@/components/Header';
 import { Sidebar } from '@/components/Sidebar';
 import { UsuarioSession } from '@/lib/auth';
-import { createClient } from '@supabase/supabase-js';
+import { getSupabase } from '@/lib/supabase';
 
 export default function DashboardLayout({
   children,
@@ -18,50 +18,100 @@ export default function DashboardLayout({
   const [loading, setLoading] = useState(true);
   const [drawerOpen, setDrawerOpen] = useState(false);
 
+  console.log('[Dashboard] RENDER - loading:', loading, 'usuario:', usuario?.email);
+
   useEffect(() => {
+    console.log('[Dashboard] 🔍 useEffect iniciado - verificando autenticação');
+    console.log('[Dashboard] VERSION: 2025-06-12-v5');
+    let isMounted = true;
+
     async function checkAuth() {
       try {
-        const supabase = createClient(
-          process.env.NEXT_PUBLIC_SUPABASE_URL!,
-          process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
-        );
+        const supabase = getSupabase();
+        console.log('[Dashboard] Supabase client obtained');
 
         const { data: { session } } = await supabase.auth.getSession();
 
+        if (!isMounted) return;
+
         if (!session?.user) {
-          console.log('[Dashboard] No session found, redirecting to login');
-          router.push('/auth/login');
-          return;
+          console.log('[Dashboard] No session found, throwing error');
+          throw new Error('UNAUTHORIZED: No session found');
         }
 
         console.log('[Dashboard] Session found:', session.user.email);
 
         // Get user data from database
-        const { data: usuarioDB } = await supabase
+        console.log('[Dashboard] Querying usuarios table for email:', session.user.email);
+        const queryResult = await supabase
           .from('usuarios')
-          .select('id, cpf, nome, email, role')
-          .eq('id', session.user.id)
+          .select('id, cpf, nome, email, role, apelido, status')
+          .eq('email', session.user.email)
           .single();
+
+        const { data: usuarioDB, error: dbError } = queryResult;
+
+        console.log('[Dashboard] ⚠️ RAW Query result:', queryResult);
+        console.log('[Dashboard] ⚠️ usuarioDB:', usuarioDB);
+        console.log('[Dashboard] ⚠️ dbError:', dbError);
+        console.log('[Dashboard] ⚠️ Condition check - dbError:', !!dbError, '- !usuarioDB:', !usuarioDB);
+
+        if (!isMounted) return;
+
+        if (dbError || !usuarioDB) {
+          console.error('[Dashboard] ❌ BLOQUEADO - User NOT in whitelist:', session.user.email);
+          console.error('[Dashboard] Error details:', dbError);
+          // Throw error to trigger error boundary - this prevents ANY rendering
+          throw new Error(`UNAUTHORIZED: ${session.user.email} not in whitelist. ${dbError?.message || 'User not found'}`);
+        }
+
+        console.log('[Dashboard] ✅ User found in whitelist:', usuarioDB.email);
+
+        if (usuarioDB.status === 'inativo') {
+          console.log('[Dashboard] User is inactive:', session.user.email);
+          throw new Error(`UNAUTHORIZED: User ${session.user.email} is inactive`);
+        }
+
+        // If first time logging in (status pendente), redirect to profile completion
+        if (usuarioDB.status === 'pendente') {
+          console.log('[Dashboard] First login - redirecting to profile completion');
+          await supabase
+            .from('usuarios')
+            .update({ status: 'ativo' })
+            .eq('id', usuarioDB.id);
+          router.push('/perfil/completar');
+          setLoading(false);
+          return;
+        }
+
+        if (!isMounted) return;
 
         // Create a user object from the session/database
         const usuarioData: UsuarioSession = {
-          id: session.user.id,
-          cpf: usuarioDB?.cpf || '',
-          nome: usuarioDB?.nome || session.user.user_metadata?.full_name || session.user.email?.split('@')[0] || 'Usuário',
+          id: usuarioDB.id,
+          cpf: usuarioDB.cpf || '',
+          nome: usuarioDB.nome || session.user.user_metadata?.full_name || '',
           email: session.user.email || '',
-          role: (usuarioDB?.role as any) || 'vendedor',
+          role: usuarioDB.role,
+          apelido: usuarioDB.apelido,
         };
 
         setUsuario(usuarioData);
+        setLoading(false);
       } catch (error) {
         console.error('Error checking auth:', error);
-        router.push('/auth/login');
-      } finally {
-        setLoading(false);
+        if (isMounted) {
+          router.push('/auth/login');
+          setLoading(false);
+        }
       }
     }
 
     checkAuth();
+
+    return () => {
+      isMounted = false;
+    };
   }, [router]);
 
   if (loading) {

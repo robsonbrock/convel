@@ -12,10 +12,11 @@ export interface LoginCredentials {
 
 export interface UsuarioSession {
   id: string;
-  cpf: string;
-  nome: string;
+  cpf?: string | null;
+  nome?: string | null;
   email: string;
-  role: 'super_admin' | 'admin' | 'vendedor';
+  apelido?: string | null;
+  role: 'super_admin' | 'admin' | 'vendedor' | 'operador';
 }
 
 // Hash password
@@ -84,31 +85,32 @@ export function getSessionFromToken(token: string): UsuarioSession | null {
 
 // Create new user (only super_admin)
 export async function criarUsuario(
-  cpf: string,
-  nome: string,
   email: string,
-  senha: string,
-  role: 'super_admin' | 'admin' | 'vendedor',
+  role: 'super_admin' | 'admin' | 'vendedor' | 'operador',
+  cpf?: string | null,
+  nome?: string | null,
+  senha?: string | null,
   telefone?: string,
   endereco?: string,
 ): Promise<UsuarioSession | null> {
   try {
-    const senhaHash = await hashPassword(senha);
+    const senhaHash = senha ? await hashPassword(senha) : null;
 
     const { data, error } = await getSupabase()
       .from('usuarios')
       .insert([
         {
-          cpf,
-          nome,
           email,
-          senha: senhaHash,
           role,
+          cpf: cpf || null,
+          nome: nome || null,
+          senha: senhaHash,
           telefone: telefone || null,
           endereco: endereco || null,
+          status: 'pendente',
         },
       ])
-      .select('id, cpf, nome, email, role')
+      .select('id, email, nome, apelido, role, status')
       .single();
 
     if (error || !data) {
@@ -117,9 +119,9 @@ export async function criarUsuario(
 
     return {
       id: data.id,
-      cpf: data.cpf,
-      nome: data.nome,
       email: data.email,
+      nome: data.nome,
+      apelido: data.apelido,
       role: data.role,
     };
   } catch {

@@ -1,6 +1,7 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
+import { useSearchParams } from 'next/navigation';
 import {
   Container,
   Box,
@@ -14,8 +15,16 @@ import {
 } from '@mui/material';
 
 export default function LoginPage() {
+  const searchParams = useSearchParams();
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
+
+  useEffect(() => {
+    const errorParam = searchParams.get('error');
+    if (errorParam === 'login_failed') {
+      setError('Não foi possível efetuar o login. Verifique suas credenciais.');
+    }
+  }, [searchParams]);
 
   async function handleGoogleLogin() {
     setError('');
